@@ -1,7 +1,0 @@
-no longer does each shelf have a type.
-it would be easy to just say each shelf has a list of types, but that's not true either. shelves can be double-sided, and each of those sides can have a type (or multiple!). maybe i could special case this...
-
-matches: [...]
-backMatches: [...]
-
-where backMatches might not exist.
