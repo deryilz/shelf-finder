@@ -1,0 +1,11 @@
+first of all, structuring
+we'll just store all the frontend data for the site (like index.html) in the root directory
+but NOT map. map will no longer be an iframe since i think this is weak
+it would be easier to understand if we just went with import() and put all code in the bookmarklet directory
+which will all be js (not ts) btw
+
+url: https://dublin.follettdestiny.com/portal/portal
+other url: https://dublin.follettdestiny.com/portal/portal?app=Destiny%20Discover&appId=destiny-JGNH-CBCP&siteGuid=8A86A3F7-0837-4032-908A-CF5371F1CB68&nav=https:%2F%2Fdublin.follettdestiny.com%2Fmetasearch%2Fui%2F41942
+
+should work on both
+let's be open to expanding to other schools if they want it
