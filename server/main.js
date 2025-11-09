@@ -10,38 +10,47 @@ import fs from "fs";
 
 let fastify = Fastify();
 
-fastify.get("/schools/:school/get", async (req, res) => {
+fastify.get("/api/schools/:school", async (req, res) => {
     let school = req.params.school;
     let info = await db.getSchoolInfo(school);
-    res.send(info);
+    if (info) {
+        res.send({ success: true, info });
+    } else {
+        res.send({ success: false });
+    }
 });
 
 // todo: update these to post
-fastify.post("/schools/:school/add-map", async (req, res) => {
-    let school = req.params.school;
-    if (!school || school !== auth.checkToken(req.body.token)) {
-        return res.status(400).send();
+fastify.post("/api/add-map", async (req, res) => {
+    let school = auth.checkToken(req.body.token);
+    if (school) {
+        let map = req.body.map;
+        let success = await db.addMap(school, map);
+        res.send({ success });
+    } else {
+        res.send({ success: false });
     }
-
-    let map = req.body.map;
-    let info = await db.addMap(school, map);
-    res.send(info);
 });
 
-fastify.post("/schools/:school/revert-map", async (req, res) => {
-    let school = req.params.school;
-    if (!school || school !== auth.checkToken(req.body.token)) {
-        return res.status(400).send();
+fastify.post("/api/revert-map", async (req, res) => {
+    let school = auth.checkToken(req.body.token);
+    if (school) {
+        let version = req.body.version;
+        let success = await db.revertMap(school, version);
+        res.send({ success });
+    } else {
+        res.send({ success: false });
     }
-
-    let version = req.body.version;
-    let info = await db.revertMap(school, version);
-    res.send(info);
 });
 
-fastify.post("/auth", (req, res) => {
+fastify.post("/api/auth", (req, res) => {
     let { school, pass } = req.body;
-    return auth.authLibrarian(school, pass);
+    let token = auth.authLibrarian(school, pass);
+    if (token) {
+        res.send({ success: true, school, token });
+    } else {
+        res.send({ success: false });
+    }
 });
 
 fastify.register(fastifyStatic, {

@@ -1,1 +1,24 @@
 hi!
+
+
+<button>click</button>
+
+<script>
+async function send() {
+    let res = await fetch('/api/add-map', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            token: localStorage.token,
+            map: [1,2,3]
+        }),
+    });
+    let json = await res.json();
+    console.log(res.status);
+    console.log(json);
+}
+
+document.querySelector('button').onclick = send;
+</script>

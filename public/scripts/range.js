@@ -1,89 +1,71 @@
-/*
- * Range that includes all words:
- * new Range("-")
- *
- * Range that includes all numbers:
- * new Range("-", true)
- *
- * Range that includes all numbers 10+:
- * new Range("10-", true)
- *
- * Range that includes all numbers over 10:
- * new Range("!10-", true)
- *
- * Range that includes all words from ABC to XYZ
- * new Range("ABC-XYZ")
- *
- * Range that includes all words starting with R:
- * new Range("R-S!")
- */
+export function parseRange(str, isNumber = false) {
+    let out = {};
 
-export class Range {
-    constructor(str, number = false) {
-        this.number = number;
-        this.originalString = str.replace(/\s/g, "");
+    let parts = str.replace(/\s/g, "").split("-");
+    if (parts.length !== 2) {
+        throw new Error("Range must contain exactly one dash.");
+    }
 
-        let parts = this.originalString.split("-");
-        if (parts.length !== 2) {
-            throw new Error("Range must contain exactly one dash.");
-        }
+    let a = parts[0];
+    if (a === "") {
+        out.lower = null;
+    } else {
+        out.lowerX = a.startsWith("!");
+        out.lower = parseValue(out.lowerX ? a.slice(1) : a, isNumber);
+    }
 
-        let a = parts[0];
-        if (a === "") {
-            this.lower = null;
+    let b = parts[1];
+    if (b === "") {
+        out.higher = null;
+    } else {
+        out.higherX = b.endsWith("!");
+        out.higher = parseValue(out.higherX ? b.slice(0, -1) : b, isNumber);
+    }
+
+    let bothBounds = out.higher !== null && out.lower !== null;
+    let anyX = bothBounds && (out.higherX || out.lowerX);
+    if (bothBounds && out.lower > out.higher || anyX && out.lower === out.higher) {
+        throw new Error("There are no values between these bounds.");
+    }
+
+    return out;
+}
+
+function parseValue(x, isNumber = false) {
+    if (isNumber) {
+        if (x !== "" || isNaN(x)) {
+            return Number(x);
         } else {
-            this.lowerX = a.startsWith("!");
-            this.lower = this.parse(this.lowerX ? a.slice(1) : a);
+            throw new Error("Expected number, not " + x + ".");
         }
-
-        let b = parts[1];
-        if (b === "") {
-            this.higher = null;
+    } else {
+        if (typeof x === "string" && /^[A-Za-Z]+$/.test(x)) {
+            return x.toUpperCase();
         } else {
-            this.higherX = b.endsWith("!");
-            this.higher = this.parse(this.higherX ? b.slice(0, -1) : b);
-        }
-
-        let bothBounds = this.higher !== null && this.lower !== null;
-        let anyX = bothBounds && (this.higherX || this.lowerX);
-        if (bothBounds && this.lower > this.higher || anyX && this.lower === this.higher) {
-            throw new Error("There are no values between the bounds " + this.originalString + ".");
+            throw new Error("Expected string, not " + x + ".");
         }
     }
+}
 
-    parse(x) {
-        if (this.number) {
-            if (x !== "" || isNaN(x)) {
-                return Number(x);
-            } else {
-                throw new Error("Expected number, not " + x + ".");
-            }
-        } else {
-            if (typeof x === "string" && /^[A-Za-Z]+$/.test(x)) {
-                return x.toUpperCase();
-            } else {
-                throw new Error("Expected string, not " + x + ".");
-            }
-        }
+export function contains(str, x, isNumber = false) {
+    let range = parseRange(str, isNumber);
+
+    let value;
+    try {
+        value = parseValue(x, isNumber);
+    } catch (err) {
+        return false;
     }
 
-    contains(x) {
-        let value = this.parse(x);
-
-        if (this.lower !== null) {
-            if (this.lowerX && value <= this.lower) return false;
-            if (!this.lowerX && value < this.lower) return false;
-        }
-
-        if (this.higher !== null) {
-            if (this.higherX && value >= this.higher) return false;
-            if (!this.higherX && value > this.higher) return false;
-        }
-
-        return true;
+    if (range.lower !== null) {
+        if (range.lowerX && value <= range.lower) return false;
+        if (!range.lowerX && value < range.lower) return false;
     }
 
-    toString() {
-        return this.originalString;
+    if (range.higher !== null) {
+        if (range.higherX && value >= range.higher) return false;
+        if (!range.higherX && value > range.higher) return false;
     }
+
+    return true;
 }
