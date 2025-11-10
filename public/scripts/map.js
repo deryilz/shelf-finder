@@ -28,6 +28,10 @@ function roundPoint(shelf, rad = 0) {
     };
 }
 
+function isSplit(shelf) {
+    return Boolean(shelf.backMatches) && shelf.backMatches.length > 0;
+}
+
 export class Map {
     constructor(canvas, shelves, draggingEnabled = false) {
         this.canvas = canvas;
@@ -57,10 +61,10 @@ export class Map {
         let height = this.scale * (shelf.height - 0.2);
 
         let props;
-        if (part === "front") {
-            props = [-width / 2, 0, width / 2, height / 2];
-        } else if (part === "back") {
-            props = [-width / 2, -height / 2, -height / 2, width, height / 2];
+        if (part === "back") {
+            props = [-width / 2, -height / 2, width / 2, height];
+        } else if (part === "front") {
+            props = [0, -height / 2, width / 2, height];
         } else {
             props = [-width / 2, -height / 2, width, height];
         }
@@ -116,17 +120,27 @@ export class Map {
             let mouseTransform = rotatePoint(coord, -rad(shelf.angle));
             let shelfTransform = rotatePoint(shelf, -rad(shelf.angle));
 
-            let dx = Math.abs(mouseTransform.x - shelfTransform.x);
-            let dy = Math.abs(mouseTransform.y - shelfTransform.y);
-            // TODO: part
-            if (dx < shelf.width / 2 && dy < shelf.height / 2) {
-                return { shelf };
+            let dx = mouseTransform.x - shelfTransform.x;
+            let dy = mouseTransform.y - shelfTransform.y;
+
+            if (Math.abs(dy) > shelf.height / 2) continue;
+
+            if (isSplit(shelf)) {
+                if (dx >= -shelf.width / 2 && dx < 0) {
+                    return { shelf, part: "back" };
+                } else if (dx >= 0 && dx <= shelf.width / 2) {
+                    return { shelf, part: "front" };
+                }
+            } else {
+                if (Math.abs(dx) <= shelf.width / 2) {
+                    return { shelf, part: null };
+                }
             }
         }
+
         return null;
     }
 
-    // TODO: change cursor
     handleMouse() {
         let target, clicking, moved, start;
 

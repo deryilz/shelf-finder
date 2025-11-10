@@ -18,7 +18,8 @@ export let shelves = [
         y: 0,
         width: 1,
         height: 3,
-        angle: 30,
+        angle: 210,
+        backMatches: [{}]
     },
     {
         x: 18,
