@@ -1,3 +1,19 @@
+export function blankShelf(width = 1, height = 3) {
+    return {
+        width,
+        height,
+        angle: 0,
+        x: 0,
+        y: 0,
+        frontMatches: [],
+        backMatches: []
+    };
+}
+
+export function isSplit(shelf) {
+    return Boolean(shelf.backMatches) && shelf.backMatches.length > 0;
+}
+
 export let shelves = [
     {
         x: 5,

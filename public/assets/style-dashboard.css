@@ -2,6 +2,19 @@ canvas {
     border: 3px solid black;
 }
 
+div.admin-sections {
+    display: flex;
+}
+
+div.sidebar {
+    padding: 10px 30px;
+}
+
+div.sidebar-heading {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
 div.mouse-location {
     margin-top: 10px;
 }

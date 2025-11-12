@@ -1,4 +1,4 @@
-import { parseBook } from "./books.js";
+import { parseBook } from "./book.js";
 import { contains } from "./range.js";
 
 function closeEquals(s1, s2) {
