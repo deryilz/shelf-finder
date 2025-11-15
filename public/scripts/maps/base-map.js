@@ -1,28 +1,12 @@
-import { isSplit } from "./shelf.js";
+// TODO: strip unnecessary
+import { rad, rotatePoint } from "../utils.js";
+import { isSplit, parts } from "../shelf.js";
 
 const SHELF_MARGIN = 0.2; // logical pixels
 const ZOOM_FACTOR = 1.07;
 
-const ORANGE = "#e58f65";
-const RED = "#d05353";
-const BLACK = "#000000";
-
-export function round(x) {
-    return Math.round(x * 1000) / 1000;
-}
-
-export function rad(deg) {
-    return Math.PI * deg / 180;
-}
-
-export function rotatePoint(point, rad = 0) {
-    let sin = Math.sin(rad);
-    let cos = Math.cos(rad);
-    return {
-        x: round(cos * point.x - sin * point.y),
-        y: round(sin * point.x + cos * point.y)
-    };
-}
+const SHELF_COLOR = "#e58f65";
+const SELECTED_COLOR = "#ac4444";
 
 export class ShelfMap {
     constructor(canvas) {
@@ -34,23 +18,29 @@ export class ShelfMap {
         this.onMouseUp = new Set();
         this.onClick = new Set();
 
-        this.init([]);
+        this.setShelves([]);
 
         this.handleMouse();
         this.handleHover();
     }
 
     // TODO: center
-    init(shelves, center = false) {
-        this.action = null;
-        this.target = null;
+    setShelves(shelves, center = false) {
+        this.clearState();
+        this.selected = [];
         this.shelves = shelves;
 
         this.x = -5;
         this.y = -5;
-        this.scale = 20; // pixels per "virtual" coord
+        this.scale = 20;
 
         this.draw();
+    }
+
+    clearState() {
+        this.action = null;
+        this.target = null;
+        this.shade = false;
     }
 
     drawShelf(shelf, color, border = null, part = null) {
@@ -91,12 +81,16 @@ export class ShelfMap {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         for (let shelf of this.shelves) {
-            this.drawShelf(shelf, ORANGE);
+            this.drawShelf(shelf, SHELF_COLOR);
         }
 
-        if (this.target && this.targetBox) {
-            let [color, border] = this.targetBox;
-            this.drawShelf(this.target.shelf, color, border, this.target.part);
+        for (let shelf of this.selected) {
+            this.drawShelf(shelf.shelf, SELECTED_COLOR, null, shelf.part);
+        }
+
+        if (this.target) {
+            let color = this.shade ? "rgba(0, 0, 0, 0.1)" : null;
+            this.drawShelf(this.target.shelf, color, "#000000", this.target.part);
         }
     }
 
@@ -117,13 +111,6 @@ export class ShelfMap {
         };
     }
 
-    getMouseInBounds(event) {
-        let rect = this.canvas.getBoundingClientRect();
-        let x = event.clientX;
-        let y = event.clientY;
-        return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-    }
-
     getTarget(coord) {
         // reverse, so that recently placed shelves appear above other ones
         for (let shelf of this.shelves.toReversed()) {
@@ -136,7 +123,7 @@ export class ShelfMap {
             if (Math.abs(dy) > shelf.height / 2) continue;
 
             if (isSplit(shelf)) {
-                if (dx >= -shelf.width / 2 && dx < 0) {
+                if (dx < 0 && dx >= -shelf.width / 2) {
                     return { shelf, part: "back" };
                 } else if (dx >= 0 && dx <= shelf.width / 2) {
                     return { shelf, part: "front" };
@@ -154,10 +141,20 @@ export class ShelfMap {
     // this function essentially sets up all the listeners, like onClick
     // it also handles panning and zooming
     handleMouse() {
+        let hovering = true;
+
         let panning = false;
         let startMap = null;
         let startPixels = null;
         let validClick = false;
+
+        this.canvas.addEventListener('mouseenter', () => {
+            hovering = true;
+        });
+
+        this.canvas.addEventListener('mouseleave', () => {
+            hovering = false;
+        });
 
         this.canvas.addEventListener("mousedown", (event) => {
             let mouse = this.getMouse(event);
@@ -216,8 +213,7 @@ export class ShelfMap {
             }
 
             // trigger a mouseMove too, if the mouse was in bounds
-            // TODO: do we even need this feature or function?
-            if (this.getMouseInBounds(event)) {
+            if (hovering) {
                 for (let listener of this.onMouseMove) {
                     listener(mouse);
                 }
@@ -231,6 +227,7 @@ export class ShelfMap {
             this.draw();
         });
 
+        // scroll to zoom
         this.canvas.addEventListener("wheel", (event) => {
             event.preventDefault();
 
@@ -262,112 +259,12 @@ export class ShelfMap {
             if (!this.action && target) {
                 this.action = "hovering";
                 this.target = target;
-                this.targetBox = [null, BLACK];
+                this.shade = false;
             } else if (this.action === "hovering" && this.target !== target) {
                 this.target = target;
             } else if (this.action === "hovering" && !target) {
-                this.action = null;
-                this.target = null;
-                this.targetBox = null;
+                this.clearState();
             }
         });
-    }
-}
-
-
-export class AdminShelfMap extends ShelfMap {
-    constructor(canvas) {
-        super(canvas);
-
-        this.handlePlace();
-        this.handleEdit();
-    }
-
-    // rare override: if placing, we don't want to interact with the shelves on the map
-    getTarget(mouse) {
-        if (this.action === "placing") {
-            return null;
-        } else {
-            return super.getTarget(mouse);
-        }
-    }
-
-    // round a shelf to the nearest "whole" coordinate based on the angle
-    roundShelf(shelf) {
-        let angle = rad(shelf.angle);
-        let rotatedBack = rotatePoint(shelf, -angle);
-        let rounded = {
-            x: Math.round(rotatedBack.x),
-            y: Math.round(rotatedBack.y)
-        };
-        let rotated = rotatePoint(rounded, angle);
-        shelf.x = round(rotated.x);
-        shelf.y = round(rotated.y);
-    }
-
-    // TODO: draw() shouldn't need to know about the possible actions
-    handleEdit() {
-        let startMouse = null;
-        let startShelf = null;
-
-        this.onMouseDown.add((mouse) => {
-            let target = this.getTarget(mouse);
-            if (!target) return;
-
-            this.action = "editing";
-            this.target = target;
-            this.targetBox = [RED, BLACK];
-
-            startMouse = mouse;
-            startShelf = { x: target.shelf.x, y: target.shelf.y };
-            this.draw();
-        });
-
-        this.onMouseMove.add((mouse) => {
-            if (!this.target) return;
-            if (this.action !== "editing") return;
-
-            this.target.shelf.x = mouse.x - startMouse.x + startShelf.x;
-            this.target.shelf.y = mouse.y - startMouse.y + startShelf.y;
-            this.roundShelf(this.target.shelf);
-
-            this.draw();
-        });
-
-        this.onMouseUp.add(() => {
-            if (this.action !== "editing") return;
-
-            this.action = null;
-            this.target = null;
-            this.targetBox = null;
-
-            startMouse = null;
-            startShelf = null;
-        });
-    }
-
-    handlePlace() {
-        this.onMouseMove.add((mouse) => {
-            if (this.action !== "placing") return;
-
-            this.target.shelf.x = mouse.x;
-            this.target.shelf.y = mouse.y;
-            this.roundShelf(this.target.shelf);
-        });
-
-        this.onClick.add((mouse) => {
-            if (this.action !== "placing") return;
-
-            this.shelves.push(this.target.shelf);
-            this.action = null;
-            this.target = null;
-            this.targetBox = null;
-        });
-    }
-
-    prepareToPlace(shelf) {
-        this.action = "placing";
-        this.target = { shelf, part: null };
-        this.targetBox = [null, BLACK];
     }
 }

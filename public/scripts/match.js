@@ -1,9 +1,6 @@
 import { parseBook } from "./book.js";
 import { contains } from "./range.js";
-
-function closeEquals(s1, s2) {
-    return s1.toUpperCase() === s2.toUpperCase();
-}
+import { closeEquals } from "./utils.js";
 
 export function matches(match, callNumber, sublocation) {
     let book = parseBook(callNumber);

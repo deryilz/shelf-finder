@@ -3,7 +3,7 @@ let password = document.getElementById("password");
 let button = document.getElementById("button");
 
 function openDashboard() {
-    location.href = "/admin/dashboard.html";
+    location.replace("/admin/dashboard.html");
 }
 
 if (localStorage.school && localStorage.token) {

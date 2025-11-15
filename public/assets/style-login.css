@@ -1,0 +1,19 @@
+div.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+input.login {
+    align-self: flex-start;
+    display: block;
+    padding: 10px;
+    font-size: 20px;
+    border: 5px solid #e58f65;
+}
+
+button {
+    align-self: flex-start;
+    padding: 10px 30px;
+    font-size: 20px;
+}

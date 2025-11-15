@@ -7,27 +7,74 @@
         <script type="module" src="/admin/dashboard.js"></script>
     </head>
     <body>
-        <div class="title">
-            Librarian dashboard
+        <div class="map">
+            <canvas id="canvas">
+            </canvas>
+            <button class="add-shelf" id="add-shelf">
+                +
+            </button>
+            <!--
+            <div class="mouse-location">
+                Mouse coordinates: <span id="coords">(0, 0)</span>
+            </div>
+            -->
         </div>
-        <div class="admin-sections">
-            <div class="map">
-                <canvas id="canvas" width="1000" height="500">
-                </canvas>
-                <div class="mouse-location">
-                    Mouse coordinates: <span id="coords">(0, 0)</span>
+        <div class="sidebar hidden" id="sidebar">
+            <div class="sidebar-heading">
+                Shelf #<span id="shelf-id">?</span>
+            </div>
+            <div class="shelf-angle">
+                <div>
+                    Angle: <span id="shelf-angle">?</span> degrees
+                </div>
+                <input class="slider" type="range" step="15" min="0" max="360" id="slider" />
+            </div>
+            <div class="matches active" id="front-matches">
+                <div class="matches-header">
+                    Front matches
+                </div>
+                <div class="match">
+                    <div class="x">x</div>
+                    <div class="type">
+                        Exact match
+                    </div>
+                    Enter call number:
+                    <input />
+                </div>
+                <div class="add-match">
+                    <select></select>
+                    <button class="add-button">
+                        +
+                    </button>
                 </div>
             </div>
-            <div class="sidebar">
-                <div class="sidebar-heading">
-                    Shelf info
+            <div class="matches" id="back-matches">
+                <div class="matches-header">
+                    Back matches
                 </div>
-                <button>
-                    Add shelf lol
-                </button>
-                <div id="temp">
-                    Testing...
+                <div class="match">
+                    <div class="type">
+                        Exact match
+                    </div>
+                    Enter call number:
+                    <input />
                 </div>
+                <div class="match">
+                    <div class="type">
+                        Exact match
+                    </div>
+                    Enter call number:
+                    <input />
+                </div>
+                <div class="add-match">
+                    <select></select>
+                    <button class="add-button">
+                        +
+                    </button>
+                </div>
+            </div>
+            <div class="delete-shelf" id="delete-shelf">
+                Delete shelf
             </div>
         </div>
     </body>
