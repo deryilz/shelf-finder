@@ -39,6 +39,7 @@ div.sidebar {
     overflow-y: auto;
     gap: 25px;
     border: 3px solid #e58f65;
+    word-break: break-word;
 }
 
 div.sidebar-heading {
@@ -121,7 +122,7 @@ div.match input.error {
 div.match div.error {
     padding: 5px 10px;
     font-size: 12px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 div.add-match {
@@ -154,4 +155,8 @@ div.delete-shelf {
     cursor: pointer;
     font-size: 15px;
     text-align: center;
+}
+
+div.delete-shelf:hover {
+    text-decoration: none;
 }

@@ -134,9 +134,13 @@ export class ShelfMap {
                 } else if (dx >= 0 && dx <= shelf.width / 2) {
                     return { shelf, part: "front" };
                 }
-            } else {
-                if (Math.abs(dx) <= shelf.width / 2) {
+            }
+
+            if (Math.abs(dx) <= shelf.width / 2) {
+                if (shelf.back.length === 0) {
                     return { shelf, part: "front" };
+                } else {
+                    return { shelf, part: "back" };
                 }
             }
         }

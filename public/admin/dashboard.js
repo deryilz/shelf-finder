@@ -2,7 +2,7 @@ import { AdminShelfMap } from "/scripts/maps/admin-map.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
 import { round } from "/scripts/utils.js";
-import { isSplit, blankShelf, getMatches } from "/scripts/shelf.js";
+import { isSplit, blankShelf } from "/scripts/shelf.js";
 import { parseValue } from "/scripts/parse.js";
 
 let canvas = document.getElementById("canvas");
@@ -11,6 +11,7 @@ let sidebar = document.getElementById("sidebar");
 class AdminDashboard {
     constructor() {
         this.fixCanvas();
+        this.target = null;
 
         // TODO: change
         let shelves = JSON.parse(localStorage.shelves ?? "[]");
@@ -25,7 +26,8 @@ class AdminDashboard {
     makeListeners() {
         // TODO: temp
         onkeydown = (event) => {
-            if (event.key === "s") {
+            if (event.code === "KeyS" && event.ctrlKey) {
+                event.preventDefault();
                 localStorage.shelves = JSON.stringify(this.map.shelves);
                 alert("Saved!");
             }
@@ -39,9 +41,8 @@ class AdminDashboard {
         this.map.onClick.add((mouse) => {
             let target = this.map.getTarget(mouse);
             if (target) {
-                this.showSidebar(target);
-                this.map.setSelected([target]);
-                this.map.draw();
+                this.target = target;
+                this.render();
             }
         });
 
@@ -52,6 +53,26 @@ class AdminDashboard {
 
         // TODO: add field
         window.addEventListener("beforeunload", () => this.unsavedChanges);
+    }
+
+    render() {
+        if (this.target) {
+            // refocus correct part if not split
+            let { shelf, part } = this.target;
+            let oppositePart = part === "front" ? "back" : "front";
+            if (shelf[part].length === 0 && shelf[oppositePart].length > 0) {
+                this.target.part = oppositePart;
+            }
+
+            this.renderSidebar(this.target);
+            this.map.setSelected([this.target]);
+            sidebar.classList.remove("hidden");
+        } else {
+            this.map.setSelected([]);
+            sidebar.classList.add("hidden");
+        }
+
+        this.map.draw();
     }
 
     initOptions() {
@@ -72,16 +93,12 @@ class AdminDashboard {
         canvas.height = rect.height;
     }
 
-    showSidebar(target) {
-        sidebar.classList.remove("hidden");
-
+    renderSidebar(target) {
         let { shelf, part } = target;
-        let matches = getMatches(shelf, part);
 
         let shelfId = document.getElementById("shelf-id");
         shelfId.textContent = "#";
         shelfId.textContent += 1 + this.map.shelves.findIndex(s => s === shelf);
-        if (isSplit(shelf)) shelfId.textContent += " " + part;
 
         let shelfAngle = document.getElementById("shelf-angle");
         shelfAngle.textContent = shelf.angle;
@@ -97,6 +114,7 @@ class AdminDashboard {
         for (let p of ["front", "back"]) {
             let container = document.getElementById(p + "-matches");
 
+            // TODO: clean up
             if (part === p) {
                 container.classList.add("active");
             } else {
@@ -104,10 +122,10 @@ class AdminDashboard {
             }
 
             for (let match of container.querySelectorAll(".match")) {
-                match.remove(true);
+                match.remove();
             }
 
-            let matchList = getMatches(shelf, p);
+            let matchList = shelf[p];
             for (let match of matchList) {
                 this.addMatchElement(container, match, matchList);
             }
@@ -117,17 +135,18 @@ class AdminDashboard {
                 let match = defaultMatch(type);
                 this.addMatchElement(container, match, matchList);
                 matchList.push(match);
-                this.map.draw();
+
+                this.render();
             };
         }
 
         let deleteShelf = document.getElementById("delete-shelf");
         deleteShelf.onclick = () => {
-            sidebar.classList.add("hidden");
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
-            this.map.setSelected([]);
-            this.map.draw();
+
+            this.target = null;
+            this.render();
         };
     }
 
@@ -150,8 +169,8 @@ class AdminDashboard {
         x.onclick = () => {
             let i = matchList.findIndex(m => m === match);
             matchList.splice(i, 1);
-            element.remove(true);
-            this.map.draw();
+            element.remove();
+            this.render();
         };
         element.appendChild(x);
 
@@ -195,9 +214,11 @@ class AdminDashboard {
 
     // whether any sidebar stuff has an error, which would prevent saving
     hasError() {
-        if (sidebar.classList.contains("hidden")) return false;
-
-        return Boolean(sidebar.querySelector("input.error"));
+        if (sidebar.classList.contains("hidden")) {
+            return false;
+        } else {
+            return Boolean(sidebar.querySelector("input.error"));
+        }
     }
 }
 

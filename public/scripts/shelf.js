@@ -11,9 +11,5 @@ export function blankShelf(width = 1, height = 3) {
 }
 
 export function isSplit(shelf) {
-    return shelf.back.length > 0;
-}
-
-export function getMatches(shelf, part) {
-    return shelf[part];
+    return shelf.front.length > 0 && shelf.back.length > 0;
 }
