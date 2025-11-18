@@ -1,6 +1,6 @@
 // TODO: strip unnecessary
 import { rad, rotatePoint } from "../utils.js";
-import { isSplit, parts } from "../shelf.js";
+import { isSplit } from "../shelf.js";
 
 const SHELF_MARGIN = 0.2; // logical pixels
 const ZOOM_FACTOR = 1.07;
@@ -24,10 +24,15 @@ export class ShelfMap {
         this.handleHover();
     }
 
+    setSelected(selected) {
+        this.selected = selected;
+    }
+
     // TODO: center
     setShelves(shelves, center = false) {
+        this.setSelected([]);
+
         this.clearState();
-        this.selected = [];
         this.shelves = shelves;
 
         this.x = -5;
@@ -43,6 +48,7 @@ export class ShelfMap {
         this.shade = false;
     }
 
+    // if part is null, the whole shelf will be drawn
     drawShelf(shelf, color, border = null, part = null) {
         let x = this.scale * (shelf.x - this.x);
         let y = this.scale * (shelf.y - this.y);
@@ -51,12 +57,12 @@ export class ShelfMap {
         let height = this.scale * (shelf.height - SHELF_MARGIN);
 
         let props;
-        if (part === "back") {
-            props = [-width / 2, -height / 2, width / 2, height];
+        if (!part || !isSplit(shelf)) {
+            props = [-width / 2, -height / 2, width, height];
         } else if (part === "front") {
             props = [0, -height / 2, width / 2, height];
-        } else {
-            props = [-width / 2, -height / 2, width, height];
+        } else if (part === "back") {
+            props = [-width / 2, -height / 2, width / 2, height];
         }
 
         this.ctx.save();
@@ -130,7 +136,7 @@ export class ShelfMap {
                 }
             } else {
                 if (Math.abs(dx) <= shelf.width / 2) {
-                    return { shelf, part: null };
+                    return { shelf, part: "front" };
                 }
             }
         }

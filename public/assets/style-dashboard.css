@@ -1,3 +1,7 @@
+.hidden {
+    display: none !important;
+}
+
 div.map {
     position: fixed;
     top: 0;
@@ -33,12 +37,8 @@ div.sidebar {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    gap: 20px;
+    gap: 25px;
     border: 3px solid #e58f65;
-}
-
-div.sidebar.hidden {
-    display: none;
 }
 
 div.sidebar-heading {
@@ -103,15 +103,25 @@ div.x:hover {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-div.type {
-    font-size: 18px;
+div.match-type {
+    font-size: 16px;
     font-weight: bold;
 }
 
 div.match input {
-    padding: 3px 8px;
+    border: none;
+    padding: 5px 8px;
     font-size: 15px;
-    border: 3px solid white;
+}
+
+div.match input.error {
+    border: 3px solid black;
+}
+
+div.match div.error {
+    padding: 5px 10px;
+    font-size: 12px;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 div.add-match {
@@ -143,4 +153,5 @@ div.delete-shelf {
     text-decoration: underline;
     cursor: pointer;
     font-size: 15px;
+    text-align: center;
 }

@@ -1,3 +1,4 @@
+export const MAROON = "#ac4444";
 export const RED = "#d05353";
 export const ORANGE = "#e58f65";
 export const BLACK = "#000000";
