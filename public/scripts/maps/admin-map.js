@@ -85,7 +85,7 @@ export class AdminShelfMap extends ShelfMap {
 
     prepareToPlace(shelf) {
         this.action = "placing";
-        this.target = { shelf, part: "front" };
+        this.target = { shelf, part: null };
         this.shade = false;
     }
 }

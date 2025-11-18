@@ -2,7 +2,7 @@ import { AdminShelfMap } from "/scripts/maps/admin-map.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
 import { round } from "/scripts/utils.js";
-import { isSplit, blankShelf } from "/scripts/shelf.js";
+import { blankShelf, isSplit, onlyPart } from "/scripts/shelf.js";
 import { parseValue } from "/scripts/parse.js";
 
 let canvas = document.getElementById("canvas");
@@ -11,7 +11,7 @@ let sidebar = document.getElementById("sidebar");
 class AdminDashboard {
     constructor() {
         this.fixCanvas();
-        this.target = null;
+        this.lastClicked = null;
 
         // TODO: change
         let shelves = JSON.parse(localStorage.shelves ?? "[]");
@@ -41,7 +41,7 @@ class AdminDashboard {
         this.map.onClick.add((mouse) => {
             let target = this.map.getTarget(mouse);
             if (target) {
-                this.target = target;
+                this.lastClicked = target;
                 this.render();
             }
         });
@@ -56,22 +56,24 @@ class AdminDashboard {
     }
 
     render() {
-        if (this.target) {
-            // refocus correct part if not split
-            let { shelf, part } = this.target;
-            let oppositePart = part === "front" ? "back" : "front";
-            if (shelf[part].length === 0 && shelf[oppositePart].length > 0) {
-                this.target.part = oppositePart;
-            }
-
-            this.renderSidebar(this.target);
-            this.map.setSelected([this.target]);
-            sidebar.classList.remove("hidden");
-        } else {
+        if (!this.lastClicked) {
             this.map.setSelected([]);
+            this.map.draw();
             sidebar.classList.add("hidden");
+            return;
         }
 
+        let { shelf, part } = this.lastClicked;
+
+        // render correct part if not split, and save it
+        if (!isSplit(shelf)) {
+            part = onlyPart(shelf);
+            this.lastClicked.part = part;
+        }
+
+        this.renderSidebar(shelf, part);
+        sidebar.classList.remove("hidden");
+        this.map.setSelected([this.lastClicked]);
         this.map.draw();
     }
 
@@ -93,9 +95,7 @@ class AdminDashboard {
         canvas.height = rect.height;
     }
 
-    renderSidebar(target) {
-        let { shelf, part } = target;
-
+    renderSidebar(shelf, highlightedPart = null) {
         let shelfId = document.getElementById("shelf-id");
         shelfId.textContent = "#";
         shelfId.textContent += 1 + this.map.shelves.findIndex(s => s === shelf);
@@ -111,11 +111,11 @@ class AdminDashboard {
             this.map.draw();
         };
 
-        for (let p of ["front", "back"]) {
-            let container = document.getElementById(p + "-matches");
+        for (let part of ["front", "back"]) {
+            let container = document.getElementById(part + "-matches");
 
             // TODO: clean up
-            if (part === p) {
+            if (part === highlightedPart) {
                 container.classList.add("active");
             } else {
                 container.classList.remove("active");
@@ -125,7 +125,7 @@ class AdminDashboard {
                 match.remove();
             }
 
-            let matchList = shelf[p];
+            let matchList = shelf[part];
             for (let match of matchList) {
                 this.addMatchElement(container, match, matchList);
             }
@@ -145,7 +145,7 @@ class AdminDashboard {
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
 
-            this.target = null;
+            this.lastClicked = null;
             this.render();
         };
     }
