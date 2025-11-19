@@ -11,7 +11,7 @@ let sidebar = document.getElementById("sidebar");
 class AdminDashboard {
     constructor() {
         this.fixCanvas();
-        this.lastClicked = null;
+        this.lastTarget = null;
 
         // TODO: change
         let shelves = JSON.parse(localStorage.shelves ?? "[]");
@@ -40,10 +40,7 @@ class AdminDashboard {
 
         this.map.onClick.add((mouse) => {
             let target = this.map.getTarget(mouse);
-            if (target) {
-                this.lastClicked = target;
-                this.render();
-            }
+            if (target) this.render(target);
         });
 
         let addShelf = document.getElementById("add-shelf");
@@ -55,25 +52,34 @@ class AdminDashboard {
         window.addEventListener("beforeunload", () => this.unsavedChanges);
     }
 
-    render() {
-        if (!this.lastClicked) {
+    highlightPart(part = null) {
+        // figure out part if there's only one option
+        if (!isSplit(this.lastTarget.shelf)) {
+            part = onlyPart(this.lastTarget.shelf);
+        }
+
+        for (let container of sidebar.querySelectorAll(".matches")) {
+            container.classList.remove("active");
+        }
+        if (part) this.getContainer(part).classList.add("active");
+
+        this.lastTarget.part = part;
+        this.map.draw();
+    }
+
+    render(target) {
+        this.lastTarget = target;
+
+        if (target) {
+            this.map.setSelected([target]);
+            sidebar.classList.remove("hidden");
+            this.renderSidebar(target.shelf);
+            this.highlightPart(target.part);
+        } else {
             this.map.setSelected([]);
-            this.map.draw();
             sidebar.classList.add("hidden");
-            return;
         }
 
-        let { shelf, part } = this.lastClicked;
-
-        // render correct part if not split, and save it
-        if (!isSplit(shelf)) {
-            part = onlyPart(shelf);
-            this.lastClicked.part = part;
-        }
-
-        this.renderSidebar(shelf, part);
-        sidebar.classList.remove("hidden");
-        this.map.setSelected([this.lastClicked]);
         this.map.draw();
     }
 
@@ -95,7 +101,7 @@ class AdminDashboard {
         canvas.height = rect.height;
     }
 
-    renderSidebar(shelf, highlightedPart = null) {
+    renderSidebar(shelf) {
         let shelfId = document.getElementById("shelf-id");
         shelfId.textContent = "#";
         shelfId.textContent += 1 + this.map.shelves.findIndex(s => s === shelf);
@@ -112,14 +118,7 @@ class AdminDashboard {
         };
 
         for (let part of ["front", "back"]) {
-            let container = document.getElementById(part + "-matches");
-
-            // TODO: clean up
-            if (part === highlightedPart) {
-                container.classList.add("active");
-            } else {
-                container.classList.remove("active");
-            }
+            let container = this.getContainer(part);
 
             for (let match of container.querySelectorAll(".match")) {
                 match.remove();
@@ -127,16 +126,15 @@ class AdminDashboard {
 
             let matchList = shelf[part];
             for (let match of matchList) {
-                this.addMatchElement(container, match, matchList);
+                this.addMatchElement(part, match, matchList);
             }
 
             container.querySelector(".add-button").onclick = () => {
                 let type = container.querySelector("select").value;
                 let match = defaultMatch(type);
-                this.addMatchElement(container, match, matchList);
                 matchList.push(match);
-
-                this.render();
+                this.addMatchElement(part, match, matchList);
+                this.highlightPart(part);
             };
         }
 
@@ -144,15 +142,17 @@ class AdminDashboard {
         deleteShelf.onclick = () => {
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
-
-            this.lastClicked = null;
-            this.render();
+            this.render(null);
         };
     }
 
-    // adds match element to the container (frontMatches or backMatches)
+    getContainer(part) {
+        return document.getElementById(part + "-matches");
+    }
+
+    // adds match element to the container (front-matches or back-matches)
     // listeners are set up to modify the match and matchList
-    addMatchElement(container, match, matchList) {
+    addMatchElement(part, match, matchList) {
         let schema = MATCH_SCHEMA.get(match.type);
 
         let element = document.createElement("div");
@@ -170,7 +170,7 @@ class AdminDashboard {
             let i = matchList.findIndex(m => m === match);
             matchList.splice(i, 1);
             element.remove();
-            this.render();
+            this.highlightPart(part);
         };
         element.appendChild(x);
 
@@ -201,6 +201,9 @@ class AdminDashboard {
                 match[name] = input.value;
                 showError();
             };
+            input.onfocus = () => {
+                this.highlightPart(part);
+            };
 
             element.appendChild(label);
             element.appendChild(input);
@@ -208,6 +211,7 @@ class AdminDashboard {
         }
 
         // insert element at the end (before the "add match" section)
+        let container = this.getContainer(part);
         let addMatch = container.querySelector(".add-match");
         container.insertBefore(element, addMatch);
     }
