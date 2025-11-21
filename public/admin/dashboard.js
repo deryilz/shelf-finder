@@ -176,7 +176,6 @@ class AdminDashboard {
     // adds match element, and set up listeners to modify the match
     addMatchElement(match, shelf, partId) {
         let schema = MATCH_SCHEMA.get(match.type);
-        let matchList = shelf.parts[partId];
 
         let element = document.createElement("div");
         element.classList.add("match");
@@ -190,8 +189,9 @@ class AdminDashboard {
         x.classList.add("x");
         x.textContent = "x";
         x.onclick = () => {
-            let i = matchList.findIndex(m => m === match);
-            matchList.splice(i, 1);
+            let matches = shelf.matches[partId];
+            let i = matches.findIndex(m => m === match);
+            matches.splice(i, 1);
             element.remove();
         };
         element.appendChild(x);
