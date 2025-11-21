@@ -1,5 +1,6 @@
 // parseable strings fit one of the following patterns:
 // "any", "str", "num", "strRange", "numRange"
+// TODO: add "word"?
 
 export function parseValue(x, type) {
     if (type === "any") {
@@ -77,9 +78,18 @@ export function parseBook(callNumber, sublocation = null) {
 function parseCallNumber(callNumber) {
     let parts = callNumber.split(" ");
 
-    if (parts.length !== 2) {
+    if (parts.length < 2 || parts.length > 3) {
         return {
             type: "unknown"
+        };
+    }
+
+    // TODO: is this detailed enough?
+    if (parts.length === 3) {
+        return {
+            type: "other",
+            prefix: parts[0],
+            author: parts[2]
         };
     }
 
@@ -99,7 +109,6 @@ function parseCallNumber(callNumber) {
         };
     }
 
-    // TODO: add more?
     return {
         type: "other",
         prefix: parts[0],
