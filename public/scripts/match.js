@@ -18,14 +18,14 @@ export const MATCH_SCHEMA = new Map([
     ["fictionMatch", {
         name: "Fiction match",
         fields: [
-            ["sublocation", "any", "The fiction sublocation (can be left blank)"],
-            ["authorRange", "strRange", "Author range"]
+            ["authorRange", "strRange", "Author range"],
+            ["sublocation", "any", "The fiction sublocation (can be left blank)"]
         ],
         matches(book) {
             return (
                 book.type === "fiction" &&
-                (!this.sublocation || closeEquals(this.sublocation, book.sublocation)) &&
-                contains(this.authorRange, book.author)
+                contains(this.authorRange, book.author) &&
+                (!this.sublocation || closeEquals(this.sublocation, book.sublocation))
             );
         }
     }],
