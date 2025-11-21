@@ -16,15 +16,15 @@ export const MATCH_SCHEMA = new Map([
         }
     }],
     ["fictionMatch", {
-        name: "Fiction sublocation match",
+        name: "Fiction match",
         fields: [
-            ["sublocation", "str", "The fiction sublocation"],
+            ["sublocation", "any", "The fiction sublocation (can be left blank)"],
             ["authorRange", "strRange", "Author range"]
         ],
         matches(book) {
             return (
                 book.type === "fiction" &&
-                closeEquals(this.sublocation, book.sublocation) &&
+                (!this.sublocation || closeEquals(this.sublocation, book.sublocation)) &&
                 contains(this.authorRange, book.author)
             );
         }

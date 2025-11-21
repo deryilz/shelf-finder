@@ -13,6 +13,9 @@ class AdminDashboard {
         this.fixCanvas();
         this.lastTarget = null;
 
+        this.lastAngle = 0;
+        this.lastMatchType = null;
+
         // TODO: change
         let shelves = JSON.parse(localStorage.shelves || "[]");
 
@@ -42,16 +45,19 @@ class AdminDashboard {
             if (target) this.render(target);
         });
 
+        let place = (type) => {
+            this.map.prepareToPlace({
+                ...blankShelf(type),
+                angle: this.lastAngle,
+            });
+        };
+
         // TODO: autogen?
         let addShelf = document.getElementById("add-shelf");
-        addShelf.addEventListener("click", () => {
-            this.map.prepareToPlace(blankShelf("single"));
-        });
+        addShelf.addEventListener("click", () => place("single"));
 
         let addShelf2 = document.getElementById("add-shelf-2");
-        addShelf2.addEventListener("click", () => {
-            this.map.prepareToPlace(blankShelf("split"));
-        });
+        addShelf2.addEventListener("click", () => place("split"));
 
         // TODO: add field
         window.addEventListener("beforeunload", () => this.unsavedChanges);
@@ -107,6 +113,7 @@ class AdminDashboard {
         shelfSlider.oninput = () => {
             shelfAngle.textContent = shelfSlider.value;
             shelf.angle = Number(shelfSlider.value);
+            this.lastAngle = shelf.angle;
             this.map.draw();
         };
 
@@ -157,6 +164,14 @@ class AdminDashboard {
             option.value = key;
             select.appendChild(option);
         }
+
+        if (this.lastMatchType) {
+            select.value = this.lastMatchType;
+        }
+
+        select.oninput = () => {
+            this.lastMatchType = select.value;
+        };
 
         addButton.onclick = () => {
             let match = defaultMatch(select.value);
