@@ -1,6 +1,5 @@
-// TODO: strip unnecessary (and reorder imports?)
-import { round, rad, rotatePoint } from "../utils.js";
 import { ShelfMap } from "./base-map.js";
+import { round, rad, rotatePoint } from "../utils.js";
 
 export class AdminShelfMap extends ShelfMap {
     constructor(canvas) {
@@ -85,7 +84,7 @@ export class AdminShelfMap extends ShelfMap {
 
     prepareToPlace(shelf) {
         this.action = "placing";
-        this.target = { shelf, part: null };
+        this.target = { shelf, partId: null };
         this.shade = false;
     }
 }

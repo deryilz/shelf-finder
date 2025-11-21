@@ -33,10 +33,10 @@ export function parseValue(x, type) {
     throw new Error("Unknown type " + type + ".");
 }
 
-export function parseRange(str, subType = "str") {
-    let out = {};
+export function parseRange(raw, subType = "str") {
+    let range = {};
 
-    let parts = str.replace(/\s/g, "").split("-");
+    let parts = raw.replace(/\s/g, "").split("-");
     if (parts.length !== 2) {
         throw new Error("Range must contain exactly one dash.");
     }
@@ -44,29 +44,29 @@ export function parseRange(str, subType = "str") {
     // parse lower bound
     let a = parts[0];
     if (a === "") {
-        out.lower = null;
+        range.lower = null;
     } else {
-        out.lowerX = a.startsWith("!");
-        out.lower = parseValue(out.lowerX ? a.slice(1) : a, subType);
+        range.lowerX = a.startsWith("!");
+        range.lower = parseValue(range.lowerX ? a.slice(1) : a, subType);
     }
 
     // parse higher bound
     let b = parts[1];
     if (b === "") {
-        out.higher = null;
+        range.higher = null;
     } else {
-        out.higherX = b.endsWith("!");
-        out.higher = parseValue(out.higherX ? b.slice(0, -1) : b, subType);
+        range.higherX = b.endsWith("!");
+        range.higher = parseValue(range.higherX ? b.slice(0, -1) : b, subType);
     }
 
     // do basic bounds checking
-    let bothBounds = out.higher !== null && out.lower !== null;
-    let anyX = bothBounds && (out.higherX || out.lowerX);
-    if (bothBounds && out.lower > out.higher || anyX && out.lower === out.higher) {
+    let bothBounds = range.higher !== null && range.lower !== null;
+    let anyX = bothBounds && (range.higherX || range.lowerX);
+    if (bothBounds && range.lower > range.higher || anyX && range.lower === range.higher) {
         throw new Error("There are no values between these bounds.");
     }
 
-    return out;
+    return range;
 }
 
 export function parseBook(callNumber, sublocation = null) {

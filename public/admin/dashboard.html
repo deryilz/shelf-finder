@@ -10,9 +10,10 @@
         <div class="map">
             <canvas id="canvas">
             </canvas>
-            <button class="add-shelf" id="add-shelf">
-                +
-            </button>
+            <div class="add-shelf-buttons">
+                <button id="add-shelf">+</button>
+                <button id="add-shelf-2">2</button>
+            </div>
         </div>
         <div class="sidebar hidden" id="sidebar">
             <div class="sidebar-heading">
@@ -23,28 +24,6 @@
                     Angle: <span id="shelf-angle">?</span> degrees
                 </div>
                 <input class="slider" type="range" step="15" min="0" max="360" id="slider" />
-            </div>
-            <div class="matches" id="front-matches">
-                <div class="matches-header">
-                    Front matches
-                </div>
-                <div class="add-match">
-                    <select></select>
-                    <button class="add-button">
-                        +
-                    </button>
-                </div>
-            </div>
-            <div class="matches" id="back-matches">
-                <div class="matches-header">
-                    Back matches
-                </div>
-                <div class="add-match">
-                    <select></select>
-                    <button class="add-button">
-                        +
-                    </button>
-                </div>
             </div>
             <div class="delete-shelf" id="delete-shelf">
                 Delete shelf

@@ -15,10 +15,15 @@ canvas {
     height: 100%;
 }
 
-button.add-shelf {
+div.add-shelf-buttons {
     position: fixed;
     bottom: 30px;
     left: 30px;
+    display: flex;
+    gap: 30px;
+}
+
+div.add-shelf-buttons button {
     font-size: 40px;
     height: 60px;
     width: 60px;
@@ -27,7 +32,7 @@ button.add-shelf {
 }
 
 div.sidebar {
-    background-color: inherit;
+    backdrop-filter: blur(20px);
     position: fixed;
     right: 30px;
     top: 30px;

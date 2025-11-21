@@ -1,6 +1,6 @@
 // TODO: strip unnecessary
 import { rad, rotatePoint } from "../utils.js";
-import { isSplit } from "../shelf.js";
+import { SHELF_SCHEMA } from "../shelf.js";
 
 const SHELF_MARGIN = 0.2; // logical pixels
 const ZOOM_FACTOR = 1.07;
@@ -48,22 +48,23 @@ export class ShelfMap {
         this.shade = false;
     }
 
-    // if part is null, the whole shelf will be drawn
-    drawShelf(shelf, color, border = null, part = null) {
+    drawShelf(shelf, color, border = null, partId = null) {
         let x = this.scale * (shelf.x - this.x);
         let y = this.scale * (shelf.y - this.y);
 
-        let width = this.scale * (shelf.width - SHELF_MARGIN);
-        let height = this.scale * (shelf.height - SHELF_MARGIN);
+        let schema = SHELF_SCHEMA.get(shelf.type);
+        let width = this.scale * (schema.width - SHELF_MARGIN);
+        let height = this.scale * (schema.height - SHELF_MARGIN);
 
-        let props;
-        if (!part || !isSplit(shelf)) {
-            props = [-width / 2, -height / 2, width, height];
-        } else if (part === "front") {
-            props = [0, -height / 2, width / 2, height];
-        } else if (part === "back") {
-            props = [-width / 2, -height / 2, width / 2, height];
-        }
+        let part = { x: 0, y: 0, width: 1, height: 1 };
+        if (partId !== null) part = schema.parts[partId];
+
+        let props = [
+            -width / 2 + part.x * width,
+            -height / 2 + part.y * height,
+            part.width * width,
+            part.height * height
+        ];
 
         this.ctx.save();
         this.ctx.translate(x, y);
@@ -90,13 +91,13 @@ export class ShelfMap {
             this.drawShelf(shelf, SHELF_COLOR);
         }
 
-        for (let shelf of this.selected) {
-            this.drawShelf(shelf.shelf, SELECTED_COLOR, null, shelf.part);
+        for (let selected of this.selected) {
+            this.drawShelf(selected.shelf, SELECTED_COLOR, null, selected.partId);
         }
 
         if (this.target) {
             let color = this.shade ? "rgba(0, 0, 0, 0.1)" : null;
-            this.drawShelf(this.target.shelf, color, "#000000", this.target.part);
+            this.drawShelf(this.target.shelf, color, "#000000", this.target.partId);
         }
     }
 
@@ -123,19 +124,21 @@ export class ShelfMap {
             let coordTransform = rotatePoint(coord, -rad(shelf.angle));
             let shelfTransform = rotatePoint(shelf, -rad(shelf.angle));
 
-            let dx = coordTransform.x - shelfTransform.x;
-            let dy = coordTransform.y - shelfTransform.y;
+            let schema = SHELF_SCHEMA.get(shelf.type);
 
-            if (Math.abs(dy) > shelf.height / 2) continue;
+            // coordinates relative to the shelf (as fractions from 0 to 1)
+            // we ceil the schema height and width to avoid unexpected null targets
+            let x = (coordTransform.x - shelfTransform.x) / Math.ceil(schema.width) + 0.5;
+            let y = (coordTransform.y - shelfTransform.y) / Math.ceil(schema.height) + 0.5;
 
-            if (isSplit(shelf)) {
-                if (dx < 0 && dx >= -shelf.width / 2) {
-                    return { shelf, part: "back" };
-                } else if (dx >= 0 && dx <= shelf.width / 2) {
-                    return { shelf, part: "front" };
+            for (let i = 0; i < schema.parts.length; i++) {
+                let part = schema.parts[i];
+                if (
+                    part.x <= x && x <= part.x + part.width &&
+                    part.y <= y && y <= part.y + part.height
+                ) {
+                    return { shelf, partId: i };
                 }
-            } else if (Math.abs(dx) <= shelf.width / 2) {
-                return { shelf, part: null };
             }
         }
 

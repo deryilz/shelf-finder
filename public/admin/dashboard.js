@@ -2,7 +2,7 @@ import { AdminShelfMap } from "/scripts/maps/admin-map.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
 import { round } from "/scripts/utils.js";
-import { blankShelf, isSplit, onlyPart } from "/scripts/shelf.js";
+import { SHELF_SCHEMA, blankShelf } from "/scripts/shelf.js";
 import { parseValue } from "/scripts/parse.js";
 
 let canvas = document.getElementById("canvas");
@@ -14,13 +14,12 @@ class AdminDashboard {
         this.lastTarget = null;
 
         // TODO: change
-        let shelves = JSON.parse(localStorage.shelves ?? "[]");
+        let shelves = JSON.parse(localStorage.shelves || "[]");
 
         this.map = new AdminShelfMap(canvas);
         this.map.setShelves(shelves);
 
         this.makeListeners();
-        this.initOptions();
     }
 
     makeListeners() {
@@ -43,27 +42,32 @@ class AdminDashboard {
             if (target) this.render(target);
         });
 
+        // TODO: autogen?
         let addShelf = document.getElementById("add-shelf");
         addShelf.addEventListener("click", () => {
-            this.map.prepareToPlace(blankShelf());
+            this.map.prepareToPlace(blankShelf("single"));
+        });
+
+        let addShelf2 = document.getElementById("add-shelf-2");
+        addShelf2.addEventListener("click", () => {
+            this.map.prepareToPlace(blankShelf("split"));
         });
 
         // TODO: add field
         window.addEventListener("beforeunload", () => this.unsavedChanges);
     }
 
-    highlightPart(part = null) {
-        // figure out part if there's only one option
-        if (!isSplit(this.lastTarget.shelf)) {
-            part = onlyPart(this.lastTarget.shelf);
+    highlightPart(partId = null) {
+        let containers = this.containers();
+        for (let i = 0; i < containers.length; i++) {
+            if (i === partId) {
+                containers[i].classList.add("active");
+            } else {
+                containers[i].classList.remove("active");
+            }
         }
 
-        for (let container of sidebar.querySelectorAll(".matches")) {
-            container.classList.remove("active");
-        }
-        if (part) this.getContainer(part).classList.add("active");
-
-        this.lastTarget.part = part;
+        this.lastTarget.partId = partId;
         this.map.draw();
     }
 
@@ -74,24 +78,13 @@ class AdminDashboard {
             this.map.setSelected([target]);
             sidebar.classList.remove("hidden");
             this.renderSidebar(target.shelf);
-            this.highlightPart(target.part);
+            this.highlightPart(target.partId);
         } else {
             this.map.setSelected([]);
             sidebar.classList.add("hidden");
         }
 
         this.map.draw();
-    }
-
-    initOptions() {
-        for (let select of document.querySelectorAll("select")) {
-            for (let [key, val] of MATCH_SCHEMA) {
-                let option = document.createElement("option");
-                option.textContent = val.name;
-                option.value = key;
-                select.appendChild(option);
-            }
-        }
     }
 
     // css scaling messes up canvas, so fix it
@@ -117,25 +110,15 @@ class AdminDashboard {
             this.map.draw();
         };
 
-        for (let part of ["front", "back"]) {
-            let container = this.getContainer(part);
+        for (let container of this.containers()) {
+            container.remove();
+        }
 
-            for (let match of container.querySelectorAll(".match")) {
-                match.remove();
+        for (let i = 0; i < shelf.matches.length; i++) {
+            this.addContainer(shelf, i);
+            for (let match of shelf.matches[i]) {
+                this.addMatchElement(match, shelf, i);
             }
-
-            let matchList = shelf[part];
-            for (let match of matchList) {
-                this.addMatchElement(part, match, matchList);
-            }
-
-            container.querySelector(".add-button").onclick = () => {
-                let type = container.querySelector("select").value;
-                let match = defaultMatch(type);
-                matchList.push(match);
-                this.addMatchElement(part, match, matchList);
-                this.highlightPart(part);
-            };
         }
 
         let deleteShelf = document.getElementById("delete-shelf");
@@ -146,14 +129,54 @@ class AdminDashboard {
         };
     }
 
-    getContainer(part) {
-        return document.getElementById(part + "-matches");
+    containers() {
+        return sidebar.querySelectorAll(".matches");
     }
 
-    // adds match element to the container (front-matches or back-matches)
-    // listeners are set up to modify the match and matchList
-    addMatchElement(part, match, matchList) {
+    addContainer(shelf, partId) {
+        let element = document.createElement("div");
+        element.classList.add("matches");
+
+        let schema = SHELF_SCHEMA.get(shelf.type);
+        let header = document.createElement("div");
+        header.classList.add("matches-header");
+        header.textContent = schema.parts[partId].label;
+        element.appendChild(header);
+
+        let addContainer = document.createElement("div");
+        addContainer.classList.add("add-match");
+
+        let select = document.createElement("select");
+        let addButton = document.createElement("button");
+        addButton.classList.add("add-button");
+        addButton.textContent = "+";
+
+        for (let [key, val] of MATCH_SCHEMA) {
+            let option = document.createElement("option");
+            option.textContent = val.name;
+            option.value = key;
+            select.appendChild(option);
+        }
+
+        addButton.onclick = () => {
+            let match = defaultMatch(select.value);
+            shelf.matches[partId].push(match);
+            this.addMatchElement(match, shelf, partId);
+            this.highlightPart(partId);
+        };
+
+        addContainer.appendChild(select);
+        addContainer.appendChild(addButton);
+        element.appendChild(addContainer);
+
+        let deleteShelf = document.getElementById("delete-shelf");
+        sidebar.insertBefore(element, deleteShelf);
+    }
+
+    // adds match element, and set up listeners to modify the match
+    addMatchElement(match, shelf, partId) {
         let schema = MATCH_SCHEMA.get(match.type);
+        let matchList = shelf.parts[partId];
 
         let element = document.createElement("div");
         element.classList.add("match");
@@ -170,7 +193,6 @@ class AdminDashboard {
             let i = matchList.findIndex(m => m === match);
             matchList.splice(i, 1);
             element.remove();
-            this.highlightPart(part);
         };
         element.appendChild(x);
 
@@ -180,7 +202,6 @@ class AdminDashboard {
             let error = document.createElement("div");
             error.classList.add("error");
 
-            // TODO: update this?
             let showError = () => {
                 try {
                     parseValue(input.value, ty);
@@ -202,7 +223,7 @@ class AdminDashboard {
                 showError();
             };
             input.onfocus = () => {
-                this.highlightPart(part);
+                this.highlightPart(partId);
             };
 
             element.appendChild(label);
@@ -210,13 +231,13 @@ class AdminDashboard {
             element.appendChild(error);
         }
 
-        // insert element at the end (before the "add match" section)
-        let container = this.getContainer(part);
+        let container = this.containers()[partId];
         let addMatch = container.querySelector(".add-match");
         container.insertBefore(element, addMatch);
     }
 
     // whether any sidebar stuff has an error, which would prevent saving
+    // could also be tracked via some property on this but i'm lazy
     hasError() {
         if (sidebar.classList.contains("hidden")) {
             return false;
