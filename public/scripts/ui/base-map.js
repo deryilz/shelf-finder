@@ -148,20 +148,10 @@ export class ShelfMap {
     // this function essentially sets up all the listeners, like onClick
     // it also handles panning and zooming
     handleMouse() {
-        let hovering = true;
-
         let panning = false;
         let startMap = null;
         let startPixels = null;
         let validClick = false;
-
-        this.canvas.addEventListener('mouseenter', () => {
-            hovering = true;
-        });
-
-        this.canvas.addEventListener('mouseleave', () => {
-            hovering = false;
-        });
 
         this.canvas.addEventListener("mousedown", (event) => {
             let mouse = this.getMouse(event);
@@ -220,7 +210,7 @@ export class ShelfMap {
             }
 
             // trigger a mouseMove too, if the mouse was in bounds
-            if (hovering) {
+            if (event.target === this.canvas) {
                 for (let listener of this.onMouseMove) {
                     listener(mouse);
                 }

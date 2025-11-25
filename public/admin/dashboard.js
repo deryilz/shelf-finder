@@ -1,4 +1,5 @@
-import { AdminShelfMap } from "/scripts/maps/admin-map.js";
+import { AdminShelfMap } from "/scripts/ui/admin-map.js";
+import { showDialog } from "/scripts/ui/dialog.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
 import { round } from "/scripts/utils.js";

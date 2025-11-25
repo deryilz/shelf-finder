@@ -3,39 +3,14 @@ import * as auth from "./auth.js";
 
 // TODO: return more info from these
 // also there should be an authed add-map that doesn't require school
-// and it should return history, while the /schools/karrer one doesn't have to (just versions[currentVersion])
-// also /schools should be /maps/
 export async function apiRoutes(fastify, options) {
-    fastify.get("/schools/:school", async (req, res) => {
+    fastify.get("/maps/:school", async (req, res) => {
         let school = req.params.school;
         let info = await db.getSchoolInfo(school);
-        if (info) {
-            res.send({ success: true, info });
-        } else {
-            res.send({ success: false });
-        }
-    });
+        if (!info) return { success: false };
 
-    fastify.post("/add-map", async (req, res) => {
-        let school = auth.checkToken(req.body.token);
-        if (school) {
-            let map = req.body.map;
-            let success = await db.addMap(school, map);
-            res.send({ success });
-        } else {
-            res.send({ success: false });
-        }
-    });
-
-    fastify.post("/revert-map", async (req, res) => {
-        let school = auth.checkToken(req.body.token);
-        if (school) {
-            let version = req.body.version;
-            let success = await db.revertMap(school, version);
-            res.send({ success });
-        } else {
-            res.send({ success: false });
-        }
+        let map = info.versions[info.versions.length - 1];
+        return { success: true, map };
     });
 
     fastify.post("/auth", (req, res) => {
@@ -46,5 +21,22 @@ export async function apiRoutes(fastify, options) {
         } else {
             res.send({ success: false });
         }
+    });
+
+    fastify.post("/map-versions", async (req, res) => {
+        let school = auth.getTokenSchool(req.body.token);
+        if (!school) return { success: false };
+
+        let info = await db.getSchoolInfo(school);
+        return { success: true, versions: info.versions };
+    });
+
+    fastify.post("/add-map", async (req, res) => {
+        let school = auth.getTokenSchool(req.body.token);
+        if (!school) return { success: false };
+
+        let map = req.body.map;
+        let success = await db.addMap(school, map);
+        return { success };
     });
 }

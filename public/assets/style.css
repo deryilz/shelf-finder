@@ -40,3 +40,7 @@ a {
 a:hover {
     color: #d05353;
 }
+
+.hidden {
+    display: none !important;
+}

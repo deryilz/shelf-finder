@@ -1,15 +1,15 @@
-import * as config from "./config.js";
+import { SCHOOLS } from "./config.js";
 import jwt from "jsonwebtoken";
 
 const SECRET = process.env.JWT_SECRET;
 
 export function authLibrarian(school, pass) {
-    if (!config.SCHOOLS.has(school)) {
+    if (!SCHOOLS.has(school)) {
         console.log("Invalid school in authLibrarian: " + school);
         return null;
     }
 
-    if (config.SCHOOLS.get(school) !== pass) {
+    if (SCHOOLS.get(school) !== pass) {
         console.log("Password didn't match in authLibrarian.");
         return null;
     }
@@ -17,7 +17,7 @@ export function authLibrarian(school, pass) {
     return jwt.sign({ librarian: true, school }, SECRET);
 }
 
-export function checkToken(token) {
+export function getTokenSchool(token) {
     if (!token) {
         console.log("Token was null.");
         return null;

@@ -1,11 +1,7 @@
-.hidden {
-    display: none !important;
-}
-
 div.map {
     position: fixed;
-    top: 0;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
 }
@@ -13,6 +9,19 @@ div.map {
 canvas {
     width: 100%;
     height: 100%;
+}
+
+div.map button {
+    border-radius: 10px;
+    border: 3px solid #f9e784;
+}
+
+button.save-button {
+    position: fixed;
+    left: 30px;
+    top: 30px;
+    font-size: 25px;
+    padding: 10px 25px;
 }
 
 div.add-shelf-buttons {
@@ -28,8 +37,6 @@ div.add-shelf-buttons button {
     font-size: 40px;
     height: 60px;
     width: 60px;
-    border-radius: 10px;
-    border: 3px solid #f9e784;
 }
 
 div.add-shelf-buttons div.number {
@@ -105,8 +112,8 @@ div.match select {
 
 div.x {
     position: absolute;
-    top: 0;
     right: 0;
+    top: 0;
     padding: 5px 15px;
     font-size: 18px;
     cursor: pointer;
