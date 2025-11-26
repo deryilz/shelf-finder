@@ -24,8 +24,6 @@ class AdminDashboard {
 
         this.map = new AdminShelfMap(canvas);
 
-        // TODO: change
-        let shelves = JSON.parse(localStorage.shelves || "[]");
         this.getShelves().then((shelves) => {
             this.lastSave = JSON.stringify(shelves);
             this.map.setShelves(shelves);
@@ -41,6 +39,7 @@ class AdminDashboard {
     }
 
     async saveShelves() {
+        throw new Error("you suck")
         localStorage.shelves = JSON.stringify(this.map.shelves);
     }
 
@@ -52,10 +51,14 @@ class AdminDashboard {
                 return;
             }
 
-            this.lastSave = JSON.stringify(this.map.shelves);
-            this.render(false);
+            this.saveShelves().then(() => {
+                this.lastSave = JSON.stringify(this.map.shelves);
+                this.render(false);
 
-            showDialog("Saved!", "Your map has been saved.");
+                showDialog("Saved!", "Your map has been saved.");
+            }).catch((err) => {
+                showDialog("Failed!", "Failed to save map: " + err.message);
+            })
         });
 
         window.addEventListener("beforeunload", (event) => {
@@ -105,7 +108,8 @@ class AdminDashboard {
     }
 
     hasUnsavedChanges() {
-        return this.lastSave && JSON.stringify(this.map.shelves) != this.lastSave;
+        if (!this.lastSave) return false;
+        return JSON.stringify(this.map.shelves) !== this.lastSave;
     }
 
     hasError() {
@@ -126,6 +130,9 @@ class AdminDashboard {
     }
 
     render(renderSidebar = true) {
+        // toggle save button
+        saveButton.classList.toggle("hidden", !this.hasUnsavedChanges());
+
         if (!this.selected) {
             this.map.setSelected([]);
             this.map.draw();
@@ -144,9 +151,6 @@ class AdminDashboard {
         for (let i = 0; i < containers.length; i++) {
             containers[i].classList.toggle("active", i === this.selected.partId);
         }
-
-        // toggle side button
-        saveButton.classList.toggle("hidden", !this.hasUnsavedChanges());
 
         this.map.draw();
     }
