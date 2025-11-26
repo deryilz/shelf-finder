@@ -54,6 +54,10 @@ export class AdminShelfMap extends ShelfMap {
             this.target.shelf.x = mouse.x - startMouse.x + startShelf.x;
             this.target.shelf.y = mouse.y - startMouse.y + startShelf.y;
             this.roundShelf(this.target.shelf);
+
+            for (let listener of this.onChange) {
+                listener();
+            }
         });
 
         this.onMouseUp.add(() => {
@@ -75,10 +79,14 @@ export class AdminShelfMap extends ShelfMap {
         });
 
         this.onClick.add((mouse) => {
-            if (this.action !== "placing") return;
+            if (this.action !== "placing") return
 
             this.shelves.push(this.target.shelf);
             this.clearState();
+
+            for (let listener of this.onChange) {
+                listener();
+            }
         });
     }
 
