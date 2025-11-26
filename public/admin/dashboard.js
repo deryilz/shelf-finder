@@ -2,7 +2,6 @@ import { AdminShelfMap } from "/scripts/ui/admin-map.js";
 import { showDialog } from "/scripts/ui/dialog.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
-import { round } from "/scripts/utils.js";
 import { SHELF_SCHEMA, blankShelf } from "/scripts/shelf.js";
 import { parseValue } from "/scripts/parse.js";
 
@@ -12,7 +11,6 @@ let saveButton = document.getElementById("save");
 
 class AdminDashboard {
     constructor() {
-        this.fixCanvas();
         this.selected = null;
 
         this.lastAngle = 0;
@@ -66,17 +64,11 @@ class AdminDashboard {
             }
         });
 
-        window.addEventListener("resize", () => {
-            this.fixCanvas();
-            this.map.draw();
-        });
-
         this.map.onClick.add((mouse) => {
             let target = this.map.getTarget(mouse);
 
             // user clicking on a non-shelf shouldn't close the sidebar
-            if (target) {
-                this.selected = target;
+            if (target && this.trySelecting(target)) {
                 this.render();
             }
         });
@@ -90,8 +82,7 @@ class AdminDashboard {
 
         let closeSidebar = document.getElementById("close-sidebar");
         closeSidebar.addEventListener("click", () => {
-            this.selected = null;
-            this.render();
+            if (this.trySelecting(null)) this.render();
         });
 
         // TODO: autogen?
@@ -128,6 +119,16 @@ class AdminDashboard {
         return false;
     }
 
+    trySelecting(selected) {
+        if (this.hasError()) {
+            showDialog("Warning", "There are errors in your previously selected shelf that must be fixed.");
+            return false;
+        } else {
+            this.selected = selected;
+            return true;
+        }
+    }
+
     render(renderSidebar = true) {
         // toggle save button
         saveButton.classList.toggle("hidden", !this.hasUnsavedChanges());
@@ -152,13 +153,6 @@ class AdminDashboard {
         }
 
         this.map.draw();
-    }
-
-    // css scaling messes up canvas, so fix it
-    fixCanvas() {
-        let rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
     }
 
     renderSidebar(shelf) {
@@ -193,8 +187,7 @@ class AdminDashboard {
         deleteShelf.onclick = () => {
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
-            this.selected = null;
-            this.render();
+            if (this.trySelecting(null)) this.render();
         };
     }
 

@@ -13,6 +13,9 @@ export class ShelfMap {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
 
+        // fix resize bug
+        this.handleResize();
+
         this.onMouseMove = new Set();
         this.onMouseDown = new Set();
         this.onMouseUp = new Set();
@@ -100,6 +103,20 @@ export class ShelfMap {
             let color = this.shade ? "rgba(0, 0, 0, 0.1)" : null;
             this.drawShelf(this.target.shelf, color, "#000000", this.target.partId);
         }
+    }
+
+    // make sure css scaling doesn't mess up canvas
+    handleResize() {
+        let fixCanvas = () => {
+            let rect = this.canvas.getBoundingClientRect();
+            this.canvas.width = rect.width;
+            this.canvas.height = rect.height;
+        };
+        window.addEventListener("resize", () => {
+            fixCanvas();
+            this.draw();
+        });
+        fixCanvas();
     }
 
     getMousePixels(event) {
