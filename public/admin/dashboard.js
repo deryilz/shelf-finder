@@ -39,7 +39,6 @@ class AdminDashboard {
     }
 
     async saveShelves() {
-        throw new Error("you suck")
         localStorage.shelves = JSON.stringify(this.map.shelves);
     }
 
