@@ -4,6 +4,9 @@ import { SHELF_SCHEMA } from "../shelf.js";
 
 const SHELF_MARGIN = 0.2; // logical pixels
 const ZOOM_FACTOR = 1.07;
+const MIN_SCALE = 5;
+const MAX_SCALE = 100;
+const MIN_PADDING = 3; // logical pixels
 
 const SHELF_COLOR = "#e58f65";
 const SELECTED_COLOR = "#ac4444";
@@ -32,16 +35,31 @@ export class ShelfMap {
         this.selected = selected;
     }
 
-    // TODO: center
-    setShelves(shelves, center = false) {
+    setShelves(shelves) {
         this.setSelected([]);
 
         this.clearState();
         this.shelves = shelves;
 
-        this.x = -5;
-        this.y = -5;
-        this.scale = 20;
+        // center the shelves in the map so that they're all visible
+        if (shelves.length > 0) {
+            let xMin = Math.min(...shelves.map(s => s.x));
+            let xMax = Math.max(...shelves.map(s => s.x));
+            let yMin = Math.min(...shelves.map(s => s.y));
+            let yMax = Math.max(...shelves.map(s => s.y));
+
+            let { width, height } = this.canvas;
+
+            // a lot of algebra was done for this
+            this.scale = Math.min(
+                width / (xMax - xMin + 2 * MIN_PADDING),
+                height / (yMax - yMin + 2 * MIN_PADDING),
+                MAX_SCALE
+            );
+
+            this.x = (xMax + xMin - width / this.scale) / 2;
+            this.y = (yMax + yMin - height / this.scale) / 2;
+        }
 
         this.draw();
     }
@@ -252,10 +270,10 @@ export class ShelfMap {
             let mouse = this.getMouse(event);
 
             if (diff < 0) {
-                if (this.scale > 100) return;
+                if (this.scale > MAX_SCALE) return;
                 this.scale *= ZOOM_FACTOR;
             } else {
-                if (this.scale < 5) return;
+                if (this.scale < MIN_SCALE) return;
                 this.scale /= ZOOM_FACTOR;
             }
 

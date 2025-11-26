@@ -18,11 +18,13 @@ class AdminDashboard {
 
         if (!localStorage.token) {
             this.logOut();
+            return;
         }
 
         this.map = new AdminShelfMap(canvas);
 
         this.getShelves().then((shelves) => {
+            console.log("Got shelves", shelves);
             this.lastSave = JSON.stringify(shelves);
             this.map.setShelves(shelves);
             this.makeListeners();
@@ -33,11 +35,34 @@ class AdminDashboard {
 
     // TODO: update both functions of course
     async getShelves() {
-        return JSON.parse(localStorage.shelves || "[]");
+        let res = await fetch("/api/map-versions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: localStorage.token,
+            }),
+        });
+        let json = await res.json();
+        if (json.success) {
+            return json.versions[json.versions.length - 1].map;
+        } else {
+            throw new Error("Unknown server error.");
+        }
     }
 
     async saveShelves() {
-        localStorage.shelves = JSON.stringify(this.map.shelves);
+        let res = await fetch("/api/add-map", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                token: localStorage.token,
+                map: this.map.shelves
+            }),
+        });
+        let json = await res.json();
+        if (!json.success) {
+            throw new Error("Unknown server error.");
+        }
     }
 
     makeListeners() {
@@ -68,8 +93,8 @@ class AdminDashboard {
             let target = this.map.getTarget(mouse);
 
             // user clicking on a non-shelf shouldn't close the sidebar
-            if (target && this.trySelecting(target)) {
-                this.render();
+            if (target) {
+                this.trySelecting(target);
             }
         });
 
@@ -82,7 +107,7 @@ class AdminDashboard {
 
         let closeSidebar = document.getElementById("close-sidebar");
         closeSidebar.addEventListener("click", () => {
-            if (this.trySelecting(null)) this.render();
+            this.trySelecting(null);
         });
 
         // TODO: autogen?
@@ -122,10 +147,9 @@ class AdminDashboard {
     trySelecting(selected) {
         if (this.hasError()) {
             showDialog("Warning", "There are errors in your previously selected shelf that must be fixed.");
-            return false;
         } else {
             this.selected = selected;
-            return true;
+            this.render();
         }
     }
 
@@ -187,7 +211,7 @@ class AdminDashboard {
         deleteShelf.onclick = () => {
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
-            if (this.trySelecting(null)) this.render();
+            this.trySelecting(null);
         };
     }
 
