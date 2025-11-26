@@ -268,7 +268,7 @@ class AdminDashboard {
             let i = matches.findIndex(m => m === match);
             matches.splice(i, 1);
             element.remove();
-            this.renderSaveButton();
+            this.render(false);
         };
         element.appendChild(x);
 
