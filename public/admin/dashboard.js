@@ -293,7 +293,6 @@ class AdminDashboard {
             input.oninput = () => {
                 match[name] = input.value;
                 showError();
-                this.render();
             };
             input.onfocus = () => {
                 this.selected.partId = partId;

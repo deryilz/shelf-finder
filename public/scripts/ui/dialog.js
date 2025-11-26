@@ -27,5 +27,11 @@ export function showDialog(titleText, text, clickAction = () => {}) {
     button.addEventListener("click", clickAction);
     element.appendChild(button);
 
+    window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            button.click();
+        }
+    });
+
     return true;
 }
