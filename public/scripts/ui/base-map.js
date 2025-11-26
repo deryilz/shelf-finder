@@ -23,7 +23,6 @@ export class ShelfMap {
         this.onMouseDown = new Set();
         this.onMouseUp = new Set();
         this.onClick = new Set();
-        this.onChange = new Set();
 
         this.setShelves([]);
 

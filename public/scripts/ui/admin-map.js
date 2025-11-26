@@ -5,6 +5,8 @@ export class AdminShelfMap extends ShelfMap {
     constructor(canvas) {
         super(canvas);
 
+        this.onChange = new Set();
+
         this.handlePlace();
         this.handleEdit();
     }
