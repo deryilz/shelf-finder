@@ -1,4 +1,9 @@
 export function showDialog(titleText, text, clickAction = () => {}) {
+    // shouldn't be able to add multiple dialogs at once
+    if (document.querySelector("div.dialog-backdrop")) {
+        return false;
+    }
+
     let backdrop = document.createElement("div");
     backdrop.classList.add("dialog-backdrop");
     document.body.appendChild(backdrop);
@@ -21,4 +26,6 @@ export function showDialog(titleText, text, clickAction = () => {}) {
     button.addEventListener("click", () => backdrop.remove());
     button.addEventListener("click", clickAction);
     element.appendChild(button);
+
+    return true;
 }
