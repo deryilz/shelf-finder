@@ -7,9 +7,9 @@ export async function apiRoutes(fastify, options) {
     fastify.get("/maps/:school", async (req) => {
         let school = req.params.school;
         let info = await db.getSchoolInfo(school);
-        if (!info) return { success: false };
+        if (!info) return { success: false, message: "No map for school " + school };
 
-        let map = info.versions[info.versions.length - 1];
+        let map = info.versions[info.versions.length - 1].map;
         return { success: true, map };
     });
 

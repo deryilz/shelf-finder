@@ -55,9 +55,12 @@ export class ShelfMap {
                 height / (yMax - yMin + 2 * MIN_PADDING),
                 MAX_SCALE
             );
-
             this.x = (xMax + xMin - width / this.scale) / 2;
             this.y = (yMax + yMin - height / this.scale) / 2;
+        } else {
+            this.scale = 20;
+            this.x = 0;
+            this.y = 0;
         }
 
         this.draw();

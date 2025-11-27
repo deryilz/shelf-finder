@@ -1,8 +1,6 @@
-export function showDialog(titleText, text, clickAction = () => {}) {
+export function showDialog(titleText, ...texts) {
     // shouldn't be able to add multiple dialogs at once
-    if (document.querySelector("div.dialog-backdrop")) {
-        return false;
-    }
+    if (document.querySelector("div.dialog-backdrop")) return;
 
     let backdrop = document.createElement("div");
     backdrop.classList.add("dialog-backdrop");
@@ -17,14 +15,15 @@ export function showDialog(titleText, text, clickAction = () => {}) {
     title.textContent = titleText;
     element.appendChild(title);
 
-    let body = document.createElement("div");
-    body.textContent = text;
-    element.appendChild(body);
+    for (let text of texts) {
+        let div = document.createElement("div");
+        div.textContent = text;
+        element.appendChild(div);
+    }
 
     let button = document.createElement("button");
     button.textContent = "Ok";
     button.addEventListener("click", () => backdrop.remove());
-    button.addEventListener("click", clickAction);
     element.appendChild(button);
 
     window.addEventListener("keydown", (event) => {
@@ -32,6 +31,4 @@ export function showDialog(titleText, text, clickAction = () => {}) {
             button.click();
         }
     });
-
-    return true;
 }

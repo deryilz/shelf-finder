@@ -69,8 +69,10 @@ class AdminDashboard {
         // TODO: change to use server
         saveButton.addEventListener("click", (event) => {
             if (this.hasError()) {
-                showDialog("Failed!", "There are errors in your selected shelf. Fix them before saving.");
-                return;
+                return showDialog(
+                    "Failed!",
+                    "There are errors in your selected shelf. Fix them before saving."
+                );
             }
 
             this.saveShelves().then(() => {
@@ -317,6 +319,7 @@ class AdminDashboard {
             input.oninput = () => {
                 match[name] = input.value;
                 showError();
+                this.render(false);
             };
             input.onfocus = () => {
                 this.selected.partId = partId;
