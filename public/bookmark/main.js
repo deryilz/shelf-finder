@@ -1,5 +1,4 @@
 import styles from "./styles.css" with { type: "text" };
-import { libraries } from "./config.js"
 
 if (!window.shelfFinderYet) {
     window.shelfFinderYet = true;
@@ -13,7 +12,7 @@ if (!window.shelfFinder) {
     startShelfFinder();
 }
 
-export function startShelfFinder() {
+function startShelfFinder() {
     // TODO: wrong site check
 
     let callNumber = getCallNumber();
@@ -26,7 +25,7 @@ export function startShelfFinder() {
 }
 
 
-export function showError(message) {
+function showError(message) {
     // TODO
 }
 
@@ -36,13 +35,43 @@ function close() {
     window.shelfFinder = false;
 }
 
-// TODO
-function getCallNumber() {
-    return "FIC KOR";
-}
+// can be null
+// returns { callNumber, sublocation, available }
+function getBookInfo() {
+    let doc = (
+        document.getElementById("Library Manager")?.contentDocument ??
+        document.getElementById("Destiny Discover")?.contentDocument ??
+        document
+    );
 
-// TODO
-function getAvailability() {
-    return true;
+    // for the old ui
+    let id = doc.getElementById("callNumber");
+    if (id) {
+        let summary = document.getElementById("copiesSummary");
+        let match = summary?.innerText.match(/([0-9]+) of [0-9]+/);
+
+        return {
+            callNumber: id.innerText,
+            sublocation: doc.getElementById("subLocation")?.innerText,
+            available: !match || Number(match[1]) > 0
+        };
+    }
+
+    let main = doc.querySelector(".cr-channel-main") ?? doc.querySelector(".product-title-details");
+    if (!main) return null;
+
+    let divs = Array.from(main.querySelectorAll("div"));
+    let lines = divs.flatMap(e => e.innerText.split("\n"));
+    let find = (prefix) => {
+        let full = prefix + ": ";
+        return lines.find(l => l.startsWith(full))?.substring(full.length);
+    };
+
+    let callNumber = find("Call Number");
+    if (!callNumber) return null;
+
+    let sublocation = find("Sublocation");
+    let available = !main.querySelector(".out");
+    return { callNumber, sublocation, available };
 }
 
