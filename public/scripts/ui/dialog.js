@@ -11,7 +11,7 @@ export function showDialog(titleText, ...texts) {
     backdrop.appendChild(element);
 
     let title = document.createElement("div");
-    title.classList.add("dialog-heading");
+    title.classList.add("dialog-header");
     title.textContent = titleText;
     element.appendChild(title);
 

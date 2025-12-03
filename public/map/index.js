@@ -50,6 +50,14 @@ async function loadMap() {
             "But don't fret! It's probably just a bug with this map. Consider asking a librarian for help."
         );
     }
+
+    if (selected.length > 1) {
+        showDialog(
+            "Multiple shelves were found",
+            "More than one shelf was found that might contain the book you're looking for.",
+            "It's probably in one of those shelves. Remember, you can always ask a librarian if you need help!"
+        );
+    }
 }
 
 loadMap().catch((err) => {
