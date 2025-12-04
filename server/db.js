@@ -5,49 +5,36 @@ import { SCHOOLS } from "./config.js";
 import { Redis } from "@upstash/redis";
 
 let redis = Redis.fromEnv();
-let schoolCaches = new Map();
 
-// returns school info {currentVersion, versions}
-export async function getSchoolInfo(school) {
-    if (typeof school !== "string" || !SCHOOLS.has(school)) {
-        console.log("Invalid school in getSchoolInfo: " + school);
-        return null;
-    }
+export async function getSchoolVersions(school) {
+    if (!SCHOOLS.has(school)) return null;
 
-    if (schoolCaches.has(school)) {
-        return schoolCaches.get(school);
-    }
+    let versions = await redis.lrange(school, 0, -1);
+    if (versions) return versions;
 
-    let info = await redis.get(school);
-    if (info) {
-        schoolCaches.set(school, info);
-        return info;
-    }
-
-    let newInfo = {
-        versions: [{ when: Date.now(), map: [] }]
-    };
-    await setSchoolInfo(school, newInfo);
-    return newInfo;
+    let newVersion = { when: Date.now(), map: [] };
+    await redis.rpush(school, newVersion);
+    return [newVersion];
 }
 
-async function setSchoolInfo(school, info) {
-    schoolCaches.set(school, info);
-    await redis.set(school, info);
+export async function getLastSchoolMap(school) {
+    if (!SCHOOLS.has(school)) return null;
+
+    let last = await redis.lindex(school, -1);
+    if (last) return last.map;
+
+    let newVersion = { when: Date.now(), map: [] };
+    await redis.rpush(school, newVersion);
+    return [];
 }
 
 export async function addMap(school, map) {
-    let info = await getSchoolInfo(school);
-    if (!info) return false;
-
     // checking every shelf is too much work
-    if (!Array.isArray(map)) {
+    if (!SCHOOLS.has(school) || !Array.isArray(map)) {
         console.log("Type error in addMap: " + map);
         return false;
     }
 
-    info.versions.push({ when: Date.now(), map });
-
-    await setSchoolInfo(school, info);
+    await redis.rpush(school, { when: Date.now(), map });
     return true;
 }

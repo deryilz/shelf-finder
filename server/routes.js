@@ -3,13 +3,12 @@ import * as auth from "./auth.js";
 
 // TODO: return more info from these
 // also there should be an authed add-map that doesn't require school
-export async function apiRoutes(fastify, options) {
+export async function apiRoutes(fastify) {
     fastify.get("/maps/:school", async (req) => {
         let school = req.params.school;
-        let info = await db.getSchoolInfo(school);
-        if (!info) return { success: false, message: "No map for school " + school };
+        let map = await db.getLastSchoolMap(school);
+        if (!map) return { success: false, message: "No map for school " + school };
 
-        let map = info.versions[info.versions.length - 1].map;
         return { success: true, map };
     });
 
@@ -25,8 +24,8 @@ export async function apiRoutes(fastify, options) {
         let school = auth.getTokenSchool(req.body.token);
         if (!school) return { success: false };
 
-        let info = await db.getSchoolInfo(school);
-        return { success: true, versions: info.versions };
+        let versions = await db.getSchoolVersions(school);
+        return { success: true, versions };
     });
 
     fastify.post("/add-map", async (req) => {
