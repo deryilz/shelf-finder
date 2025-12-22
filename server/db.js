@@ -2,39 +2,64 @@
 // the database is designed such that no meaningful data ever gets erased.
 
 import { SCHOOLS } from "./config.js";
-import { Redis } from "@upstash/redis";
+import postgres from "postgres";
 
-let redis = Redis.fromEnv();
+let sql = postgres(process.env.SUPABASE_URL2);
 
 export async function getSchoolVersions(school) {
     if (!SCHOOLS.has(school)) return null;
 
-    let versions = await redis.lrange(school, 0, -1);
-    if (versions) return versions;
+    let rows = await sql`
+    SELECT created_at AS "when", map
+    FROM school_versions
+    WHERE school = ${school}
+    ORDER BY created_at ASC
+    `;
 
-    let newVersion = { when: Date.now(), map: [] };
-    await redis.rpush(school, newVersion);
+    if (rows.length > 0) return rows;
+
+    let now = new Date();
+    let newVersion = { when: now, map: [] };
+
+    await sql`
+    INSERT INTO school_versions (school, created_at, map)
+    VALUES (${school}, ${now}, ${sql.json(newVersion.map)})
+    `;
+
     return [newVersion];
 }
 
 export async function getLastSchoolMap(school) {
     if (!SCHOOLS.has(school)) return null;
 
-    let last = await redis.lindex(school, -1);
-    if (last) return last.map;
+    let rows = await sql`
+    SELECT map
+    FROM school_versions
+    WHERE school = ${school}
+    ORDER BY created_at DESC
+    LIMIT 1
+    `;
 
-    let newVersion = { when: Date.now(), map: [] };
-    await redis.rpush(school, newVersion);
+    if (rows.length > 0) return rows[0].map;
+
+    await sql`
+    INSERT INTO school_versions (school, created_at, map)
+    VALUES (${school}, ${new Date()}, ${sql.json([])})
+    `;
+
     return [];
 }
 
 export async function addMap(school, map) {
-    // checking every shelf is too much work
     if (!SCHOOLS.has(school) || !Array.isArray(map)) {
-        console.log("Type error in addMap: " + map);
+        console.log("Type error in addMap:", map);
         return false;
     }
 
-    await redis.rpush(school, { when: Date.now(), map });
+    await sql`
+    INSERT INTO school_versions (school, created_at, map)
+    VALUES (${school}, ${new Date()}, ${sql.json(map)})
+    `;
+
     return true;
 }
