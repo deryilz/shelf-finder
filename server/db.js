@@ -1,6 +1,3 @@
-// for speed and lowest cost, we store the whole database as a local object.
-// the database is designed such that no meaningful data ever gets erased.
-
 import { SCHOOLS } from "./config.js";
 import postgres from "postgres";
 
@@ -12,7 +9,7 @@ export async function initTable() {
         id BIGSERIAL PRIMARY KEY,
         school TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        map JSONB NOT NULL
+        map JSONB NOT NULL DEFAULT '[]'::jsonb
     );
     `;
 

@@ -22,6 +22,6 @@ fastify.setNotFoundHandler((req, res) => {
     res.code(404).type('text/html').send(fs.readFileSync(filePath));
 });
 
-fastify.listen({ port: 3000 }, (err, address) => {
+fastify.listen({ port: 3000, host: "0.0.0.0" }, (err, address) => {
     console.log("Shelf finder server now running on " + address);
 });
