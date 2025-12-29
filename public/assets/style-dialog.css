@@ -17,6 +17,7 @@ div.dialog {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    font-size: 14px;
     padding: 30px 40px;
     min-width: 300px;
     max-width: 800px;

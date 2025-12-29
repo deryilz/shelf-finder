@@ -1,0 +1,14 @@
+div.section {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    gap: 20px;
+}
+
+div.header {
+    font-size: 30px;
+}
+
+li {
+    margin: 5px 0;
+}
