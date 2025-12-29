@@ -6,6 +6,19 @@ import postgres from "postgres";
 
 let sql = postgres(process.env.SUPABASE_URL2);
 
+export async function initTable() {
+    await sql`
+    CREATE TABLE IF NOT EXISTS school_versions (
+        id BIGSERIAL PRIMARY KEY,
+        school TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        map JSONB NOT NULL
+    );
+    `;
+
+    // TODO: order by created_at i guess?
+}
+
 export async function getSchoolVersions(school) {
     if (!SCHOOLS.has(school)) return null;
 
