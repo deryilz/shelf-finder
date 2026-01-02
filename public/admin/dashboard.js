@@ -35,7 +35,7 @@ class AdminDashboard {
 
     // TODO: update both functions of course
     async getShelves() {
-        let res = await fetch("https://api.shelf-finder.com/map-versions", {
+        let res = await fetch("/api/map-versions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -51,7 +51,7 @@ class AdminDashboard {
     }
 
     async saveShelves() {
-        let res = await fetch("https://api.shelf-finder.com/add-map", {
+        let res = await fetch("/api/add-map", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

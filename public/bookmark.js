@@ -89,7 +89,7 @@ function startShelfFinder() {
     params.append("callNumber", info.callNumber);
     if (info.sublocation) params.append("sublocation", info.sublocation);
 
-    let url = "https://shelf-finder.com/map?" + params.toString();
+    let url = import.meta.resolve("./map") + "?" + params.toString();
     show("Your book's call number is " + info.callNumber, url);
 }
 

@@ -25,10 +25,10 @@ button.addEventListener("click", () => {
 });
 
 async function auth() {
-    let res = await fetch('https://api.shelf-finder.com/auth', {
-        method: 'POST',
+    let res = await fetch("/api/auth", {
+        method: "POST",
         headers: {
-            'Content-Type': 'application/json'
+            "Content-Type": "application/json"
         },
         body: JSON.stringify({
             school: username.value,

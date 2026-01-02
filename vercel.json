@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/404.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/404.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/bookmark.js",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ]
+}

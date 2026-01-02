@@ -20,7 +20,7 @@ async function loadMap() {
     let book = parseBook(callNumber, sublocation);
     console.log("Book:", book);
 
-    let res = await fetch("https://api.shelf-finder.com/get-map", {
+    let res = await fetch("/api/get-map", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ schoolName })

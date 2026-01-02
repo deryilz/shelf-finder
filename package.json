@@ -7,10 +7,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node src/main.js"
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "@fastify/cors": "^11.2.0",
     "dotenv": "^17.2.3",
     "fastify": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
