@@ -3,10 +3,10 @@ import * as auth from "./auth.js";
 
 // TODO: return more info from these
 export async function apiRoutes(fastify) {
-    fastify.get("/maps/:school", async (req) => {
-        let school = req.params.school;
-        let map = await db.getLastSchoolMap(school);
-        if (!map) return { success: false, message: "No map for school " + school };
+    fastify.post("/get-map", async (req) => {
+        let schoolName = req.body.schoolName;
+        let map = await db.getLastSchoolMap(schoolName);
+        if (!map) return { success: false, message: "No school with name " + schoolName };
 
         return { success: true, map };
     });

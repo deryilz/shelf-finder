@@ -9,18 +9,22 @@ let canvas = document.getElementById("canvas");
 async function loadMap() {
     let params = new URLSearchParams(location.search);
 
-    let school = params.get("school");
+    let schoolName = params.get("schoolName");
     let callNumber = params.get("callNumber");
     let sublocation = params.get("sublocation");
 
-    if (!school || !callNumber) {
+    if (!schoolName || !callNumber) {
         return showDialog("Invalid query parameters");
     }
 
     let book = parseBook(callNumber, sublocation);
     console.log("Book:", book);
 
-    let res = await fetch("/api/maps/" + encodeURIComponent(school));
+    let res = await fetch("https://api.shelf-finder.com/get-map", {{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schoolName })
+    });
     let json = await res.json();
     if (!json.success) {
         return showDialog("Couldn't get map", json.message);

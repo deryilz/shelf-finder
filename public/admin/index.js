@@ -21,7 +21,7 @@ password.addEventListener("keydown", (event) => {
 button.addEventListener("click", auth);
 
 async function auth() {
-    let res = await fetch('/api/auth', {
+    let res = await fetch('https://api.shelf-finder.com/auth', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

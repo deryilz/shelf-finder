@@ -3,21 +3,8 @@ import postgres from "postgres";
 
 let sql = postgres(process.env.SUPABASE_URL2);
 
-export async function initTable() {
-    await sql`
-    CREATE TABLE IF NOT EXISTS school_versions (
-        id BIGSERIAL PRIMARY KEY,
-        school TEXT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        map JSONB NOT NULL DEFAULT '[]'::jsonb
-    );
-    `;
-
-    // TODO: order by created_at i guess?
-}
-
 export async function getSchoolVersions(school) {
-    if (!SCHOOLS.has(school)) return null;
+    if (!SCHOOLS.some(s => s.id === school)) return null;
 
     let rows = await sql`
     SELECT created_at AS "when", map
@@ -39,8 +26,9 @@ export async function getSchoolVersions(school) {
     return [newVersion];
 }
 
-export async function getLastSchoolMap(school) {
-    if (!SCHOOLS.has(school)) return null;
+export async function getLastSchoolMap(schoolName) {
+    let school = SCHOOLS.find(s => s.name === schoolName)?.id;
+    if (!school) return null;
 
     let rows = await sql`
     SELECT map
@@ -61,7 +49,7 @@ export async function getLastSchoolMap(school) {
 }
 
 export async function addMap(school, map) {
-    if (!SCHOOLS.has(school) || !Array.isArray(map)) {
+    if (!SCHOOLS.some(s => s.id === school) || !Array.isArray(map)) {
         console.log("Type error in addMap:", map);
         return false;
     }
