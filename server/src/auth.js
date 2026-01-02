@@ -4,19 +4,18 @@ import jwt from "jsonwebtoken";
 const SECRET = process.env.JWT_SECRET;
 
 export function authLibrarian(school, pass) {
-    let school = SCHOOLS.find(s => s.id === schoolName);
-
-    if (!school) {
+    let schoolPass = SCHOOLS.find(s => s.id === school)?.pass;
+    if (!schoolPass) {
         console.log("Invalid school in authLibrarian: " + school);
         return null;
     }
 
-    if (school.pass !== pass) {
+    if (schoolPass !== pass) {
         console.log("Password didn't match in authLibrarian.");
         return null;
     }
 
-    return jwt.sign({ librarian: true, school: school.id }, SECRET);
+    return jwt.sign({ librarian: true, school }, SECRET);
 }
 
 export function getTokenSchool(token) {

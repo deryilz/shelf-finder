@@ -20,7 +20,7 @@ async function loadMap() {
     let book = parseBook(callNumber, sublocation);
     console.log("Book:", book);
 
-    let res = await fetch("https://api.shelf-finder.com/get-map", {{
+    let res = await fetch("https://api.shelf-finder.com/get-map", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ schoolName })
@@ -65,5 +65,9 @@ async function loadMap() {
 }
 
 loadMap().catch((err) => {
-    showDialog("Couldn't load map", err.message);
+    showDialog(
+        "Couldn't load map",
+        err.message,
+        "Your school might not be supported. Consider submitting a bug report!"
+    );
 });
