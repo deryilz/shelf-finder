@@ -27,12 +27,12 @@ button:hover {
 }
 
 a {
-    color: black;
+    color: #ac4444;
     transition: color 250ms;
 }
 
 a:hover {
-    color: #d05353;
+    color: black;
 }
 
 .hidden {

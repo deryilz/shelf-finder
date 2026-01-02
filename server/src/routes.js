@@ -2,7 +2,6 @@ import * as db from "./db.js";
 import * as auth from "./auth.js";
 
 // TODO: return more info from these
-// also there should be an authed add-map that doesn't require school
 export async function apiRoutes(fastify) {
     fastify.get("/maps/:school", async (req) => {
         let school = req.params.school;
