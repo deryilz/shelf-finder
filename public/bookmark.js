@@ -84,9 +84,12 @@ function startShelfFinder() {
         return show("No copies of this book are currently available.");
     }
 
-    let school = encodeURIComponent(schoolName);
-    let url = `https://shelf-finder.com/map?schoolName=${school}&callNumber=${info.callNumber}`;
-    if (info.sublocation) url += `&sublocation=${info.sublocation}`;
+    let params = new URLSearchParams();
+    params.append("schoolName", schoolName);
+    params.append("callNumber", info.callNumber);
+    if (info.sublocation) params.append("sublocation", info.sublocation);
+
+    let url = "https://shelf-finder.com/map?" + params.toString();
     show("Your book's call number is " + info.callNumber, url);
 }
 

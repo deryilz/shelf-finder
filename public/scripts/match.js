@@ -39,7 +39,7 @@ export const MATCH_SCHEMA = new Map([
             return (
                 book.type === "other" &&
                 closeEquals(this.prefix, book.prefix) &&
-                contains(this.author, book.author)
+                contains(this.authorRange, book.author)
             );
         }
     }],
