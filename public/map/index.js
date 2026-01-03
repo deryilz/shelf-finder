@@ -35,7 +35,6 @@ async function loadMap() {
 
     for (let shelf of map.shelves) {
         for (let i = 0; i < shelf.matches.length; i++) {
-            console.log({ shelf, partId: i });
             if (shelf.matches[i].some(m => matches(m, book))) {
                 console.log("Matched book!", shelf.matches[i]);
                 map.matches.push({ shelf, partId: i });
