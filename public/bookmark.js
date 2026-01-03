@@ -129,10 +129,16 @@ function show(message, frameUrl = null) {
 
     let x = make("div", ["x", "border"], bar);
     x.textContent = "x";
-    x.onclick = () => {
+
+    let listener = window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") x.click();
+    });
+
+    x.addEventListener("click", () => {
         backdrop.remove();
         window.shelfFinder = false;
-    };
+        window.removeEventListener("keydown", listener);
+    });
 }
 
 // can be null
