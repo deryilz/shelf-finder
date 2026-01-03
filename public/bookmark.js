@@ -82,7 +82,7 @@ if (!window.shelfFinder) {
 function startShelfFinder() {
     // super loose check but i don't want to do anything stricter
     if (!location.hostname.includes("destiny")) {
-        return show("Make sure you're on the Destiny website.");
+        return show("Make sure you're on the Destiny Discover website.");
     }
 
     let info = getBookInfo();
@@ -106,6 +106,7 @@ function startShelfFinder() {
     if (info.sublocation) message += " [" + info.sublocation + "]";
 
     let url = import.meta.resolve("/map") + "?" + params.toString();
+    console.log("Framing Shelf Finder URL:", url);
     show(message, url);
 }
 

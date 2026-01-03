@@ -8,10 +8,11 @@ div.dialog-backdrop {
     z-index: 99;
 }
 
-/* quick dumb fix to avoid duplicating shading */
+/*
 div.dialog-backdrop ~ div.dialog-backdrop {
     background-color: none;
 }
+*/
 
 div.dialog {
     position: fixed;

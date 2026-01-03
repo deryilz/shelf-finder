@@ -1,19 +1,10 @@
-import { ShelfMap } from "/scripts/ui/base-map.js";
+import { UserShelfMap } from "/scripts/ui/user-map.js";
 import { showDialog, showSpinner } from "/scripts/ui/dialog.js";
 
 import { parseBook } from "/scripts/parse.js";
 import { matches } from "/scripts/match.js";
 
 let canvas = document.getElementById("canvas");
-
-let spinner = showSpinner();
-loadMap().catch((err) => {
-    showDialog(
-        "Couldn't load map",
-        err.message,
-        "Your school might not be supported. Consider submitting a bug report!"
-    );
-}).finally(() => spinner.remove());
 
 async function loadMap() {
     let params = new URLSearchParams(location.search);
@@ -39,32 +30,29 @@ async function loadMap() {
         return showDialog("Couldn't get map", json.message);
     }
 
-    let map = new ShelfMap(canvas);
-    map.setShelves(json.map);
+    let map = new UserShelfMap(canvas, json.map);
+    window.map = map;
 
-    let selected = [];
-    for (let shelf of json.map) {
+    for (let shelf of map.shelves) {
         for (let i = 0; i < shelf.matches.length; i++) {
+            console.log({ shelf, partId: i });
             if (shelf.matches[i].some(m => matches(m, book))) {
                 console.log("Matched book!", shelf.matches[i]);
-                selected.push({ shelf, partId: i });
+                map.matches.push({ shelf, partId: i });
             }
         }
     }
 
-    if (selected.length > 0) {
-        map.setSelected(selected);
-        map.draw();
-    } else {
+    map.draw();
+
+    if (map.matches.length === 0) {
         showDialog(
             "Couldn't find any shelves",
             "No shelves were found containing the following book:",
             JSON.stringify([callNumber, sublocation].filter(x => x), null, 1),
             "But don't fret! It's probably just a bug with this map. Consider asking a librarian for help."
         );
-    }
-
-    if (selected.length > 1) {
+    } else if (map.matches.length > 1) {
         showDialog(
             "Multiple shelves were found",
             "More than one shelf was found that might contain the book you're looking for.",
@@ -72,3 +60,20 @@ async function loadMap() {
         );
     }
 }
+
+window.addEventListener("error", (event) => {
+    showDialog(
+        "Super unexpected error",
+        event.error.message,
+        "Please file a bug report!"
+    );
+}, true);
+
+let spinner = showSpinner();
+loadMap().catch((err) => {
+    showDialog(
+        "Couldn't load map",
+        err.message,
+        "Your school might not be supported. Consider submitting a bug report!"
+    );
+}).finally(() => spinner.remove());

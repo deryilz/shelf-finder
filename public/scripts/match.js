@@ -19,7 +19,7 @@ export const MATCH_SCHEMA = new Map([
         name: "Fiction match",
         fields: [
             ["authorRange", "strRange", "Author range"],
-            ["sublocation", "any", "The fiction sublocation (can be left blank)"]
+            ["sublocation", "any", "Fiction sublocation (optional)"]
         ],
         matches(book) {
             return (

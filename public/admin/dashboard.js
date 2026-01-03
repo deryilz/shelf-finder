@@ -11,26 +11,20 @@ let saveButton = document.getElementById("save");
 
 class AdminDashboard {
     constructor() {
-        this.selected = null;
-
         this.lastAngle = 0;
         this.lastMatchType = null;
 
-        if (!localStorage.token) {
-            this.logOut();
-            return;
-        }
-
-        this.map = new AdminShelfMap(canvas);
+        if (!localStorage.token) return this.logOut();
 
         let spinner = showSpinner();
         this.getShelves().then((shelves) => {
             console.log("Got shelves", shelves);
             this.lastSave = JSON.stringify(shelves);
-            this.map.setShelves(shelves);
+            this.map = new AdminShelfMap(canvas, shelves);
             this.makeListeners();
+            this.render();
         }).catch((err) => {
-            showDialog("Error in getting map", err.message);
+            showDialog("Error while getting map", err.message);
         }).finally(() => spinner.remove());
     }
 
@@ -69,10 +63,10 @@ class AdminDashboard {
     makeListeners() {
         // TODO: change to use server
         saveButton.addEventListener("click", (event) => {
-            if (this.hasError()) {
+            if (this.map.hasError()) {
                 return showDialog(
                     "Failed!",
-                    "There are errors in your selected shelf. Fix them before saving."
+                    "There are errors in your selected shelf. Please fix them before saving."
                 );
             }
 
@@ -93,15 +87,6 @@ class AdminDashboard {
             }
         });
 
-        this.map.onClick.add((mouse) => {
-            let target = this.map.getTarget(mouse);
-
-            // user clicking on a non-shelf shouldn't close the sidebar
-            if (target) {
-                this.trySelecting(target);
-            }
-        });
-
         let place = (type) => {
             this.map.prepareToPlace({
                 ...blankShelf(type),
@@ -111,18 +96,28 @@ class AdminDashboard {
 
         let closeSidebar = document.getElementById("close-sidebar");
         closeSidebar.addEventListener("click", () => {
-            this.trySelecting(null);
+            this.map.select(null);
         });
 
-        // TODO: autogen?
         let addShelf = document.getElementById("add-shelf");
         addShelf.addEventListener("click", () => place("single"));
 
         let addShelf2 = document.getElementById("add-shelf-2");
         addShelf2.addEventListener("click", () => place("split"));
 
-        this.map.onChange.add(() => {
+        this.map.onEdit.add(() => {
             this.render(false);
+        });
+
+        this.map.onSelect.add(() => {
+            this.render();
+        });
+
+        this.map.onInvalid.add(() => {
+            showDialog(
+                "Hold on!",
+                "There are errors in your currently selected shelf. Please fix them first.",
+            );
         });
     }
 
@@ -131,56 +126,22 @@ class AdminDashboard {
         return JSON.stringify(this.map.shelves) !== this.lastSave;
     }
 
-    hasError() {
-        if (!this.selected) return false;
-
-        for (let match of this.selected.shelf.matches.flat()) {
-            let schema = MATCH_SCHEMA.get(match.type);
-            for (let [name, ty, _] of schema.fields) {
-                try {
-                    parseValue(match[name], ty);
-                } catch {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    trySelecting(selected) {
-        if (this.hasError()) {
-            showDialog(
-                "Warning",
-                "There are errors in your currently selected shelf that must be fixed."
-            );
-        } else {
-            this.selected = selected;
-            this.render();
-        }
-    }
-
-    render(renderSidebar = true) {
+    render(updateSidebar = true) {
         // toggle save button
         saveButton.classList.toggle("hidden", !this.hasUnsavedChanges());
 
-        if (!this.selected) {
-            this.map.setSelected([]);
-            this.map.draw();
-            sidebar.classList.add("hidden");
-            return;
-        }
+        this.map.draw();
 
-        this.map.setSelected([this.selected]);
-        if (renderSidebar) {
-            this.renderSidebar(this.selected.shelf);
-        }
+        let selected = this.map.selected;
+        if (!selected) return sidebar.classList.add("hidden");
+
+        if (updateSidebar) this.renderSidebar(selected.shelf);
         sidebar.classList.remove("hidden");
 
         // highlight correct part
         let containers = this.containers();
         for (let i = 0; i < containers.length; i++) {
-            containers[i].classList.toggle("active", i === this.selected.partId);
+            containers[i].classList.toggle("active", i === selected.partId);
         }
 
         this.map.draw();
@@ -208,7 +169,7 @@ class AdminDashboard {
         }
 
         for (let i = 0; i < shelf.matches.length; i++) {
-            this.addContainer(shelf, i);
+            this.createContainer(shelf, i);
             for (let match of shelf.matches[i]) {
                 this.addMatchElement(match, shelf, i);
             }
@@ -218,7 +179,8 @@ class AdminDashboard {
         deleteShelf.onclick = () => {
             let i = this.map.shelves.findIndex(s => s === shelf);
             this.map.shelves.splice(i, 1);
-            this.trySelecting(null);
+            this.map.select(null);
+            this.render();
         };
     }
 
@@ -226,7 +188,7 @@ class AdminDashboard {
         return sidebar.querySelectorAll(".matches");
     }
 
-    addContainer(shelf, partId) {
+    createContainer(shelf, partId) {
         let element = document.createElement("div");
         element.classList.add("matches");
 
@@ -263,7 +225,7 @@ class AdminDashboard {
             let match = defaultMatch(select.value);
             shelf.matches[partId].push(match);
             this.addMatchElement(match, shelf, partId);
-            this.selected.partId = partId;
+            this.map.selected.partId = partId;
             this.render(false);
         };
 
@@ -315,7 +277,7 @@ class AdminDashboard {
                     error.classList.remove("hidden");
                     error.textContent = "ERROR: " + e.message;
                 }
-            }
+            };
 
             label.textContent = desc;
             input.value = match[name];
@@ -327,7 +289,7 @@ class AdminDashboard {
                 this.render(false);
             };
             input.onfocus = () => {
-                this.selected.partId = partId;
+                this.map.selected.partId = partId;
                 this.render(false);
             };
 
@@ -346,5 +308,13 @@ class AdminDashboard {
         location.replace("/admin");
     }
 }
+
+window.addEventListener("error", (event) => {
+    showDialog(
+        "Super unexpected error",
+        event.error.message,
+        "Please file a bug report!"
+    );
+}, true);
 
 window.admin = new AdminDashboard();

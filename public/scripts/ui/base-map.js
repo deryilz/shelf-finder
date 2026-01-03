@@ -1,43 +1,33 @@
-// TODO: strip unnecessary
 import { rad, rotatePoint } from "../utils.js";
 import { SHELF_SCHEMA } from "../shelf.js";
 
 const SHELF_MARGIN = 0.2; // logical pixels
-const ZOOM_FACTOR = 1.07;
+const ZOOM_SPEED = 1.07;
 const MIN_SCALE = 5;
 const MAX_SCALE = 100;
 const MIN_PADDING = 3; // logical pixels
 
 const SHELF_COLOR = "#e58f65";
-const SELECTED_COLOR = "#ac4444";
 
 export class ShelfMap {
-    constructor(canvas) {
+    constructor(canvas, shelves) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d");
 
         // fix resize bug
         this.handleResize();
 
+        // listeners
         this.onMouseMove = new Set();
         this.onMouseDown = new Set();
         this.onMouseUp = new Set();
         this.onClick = new Set();
 
-        this.setShelves([]);
-
+        this.setShelves(shelves);
         this.handleMouse();
-        this.handleHover();
-    }
-
-    setSelected(selected) {
-        this.selected = selected;
     }
 
     setShelves(shelves) {
-        this.setSelected([]);
-
-        this.clearState();
         this.shelves = shelves;
 
         // center the shelves in the map so that they're all visible
@@ -58,18 +48,10 @@ export class ShelfMap {
             this.x = (xMax + xMin - width / this.scale) / 2;
             this.y = (yMax + yMin - height / this.scale) / 2;
         } else {
-            this.scale = 20;
+            this.scale = 30;
             this.x = 0;
             this.y = 0;
         }
-
-        this.draw();
-    }
-
-    clearState() {
-        this.action = null;
-        this.target = null;
-        this.shade = false;
     }
 
     drawShelf(shelf, color, border = null, partId = null) {
@@ -113,15 +95,6 @@ export class ShelfMap {
 
         for (let shelf of this.shelves) {
             this.drawShelf(shelf, SHELF_COLOR);
-        }
-
-        for (let selected of this.selected) {
-            this.drawShelf(selected.shelf, SELECTED_COLOR, null, selected.partId);
-        }
-
-        if (this.target) {
-            let color = this.shade ? "rgba(0, 0, 0, 0.1)" : null;
-            this.drawShelf(this.target.shelf, color, "#000000", this.target.partId);
         }
     }
 
@@ -183,6 +156,11 @@ export class ShelfMap {
         return null;
     }
 
+    // meant to be overwritten
+    canPan(mouse) {
+        return true;
+    }
+
     // this function essentially sets up all the listeners, like onClick
     // it also handles panning and zooming
     handleMouse() {
@@ -194,7 +172,7 @@ export class ShelfMap {
         this.canvas.addEventListener("mousedown", (event) => {
             let mouse = this.getMouse(event);
 
-            if (!this.getTarget(mouse)) {
+            if (this.canPan(mouse)) {
                 panning = true;
                 startMap = { x: this.x, y: this.y };
             }
@@ -273,10 +251,10 @@ export class ShelfMap {
 
             if (diff < 0) {
                 if (this.scale > MAX_SCALE) return;
-                this.scale *= ZOOM_FACTOR;
+                this.scale *= ZOOM_SPEED;
             } else {
                 if (this.scale < MIN_SCALE) return;
-                this.scale /= ZOOM_FACTOR;
+                this.scale /= ZOOM_SPEED;
             }
 
             let newMouse = this.getMouse(event);
@@ -286,20 +264,5 @@ export class ShelfMap {
 
             this.draw();
         }, { passive: false });
-    }
-
-    handleHover() {
-        this.onMouseMove.add((mouse) => {
-            let target = this.getTarget(mouse);
-            if (!this.action && target) {
-                this.action = "hovering";
-                this.target = target;
-                this.shade = false;
-            } else if (this.action === "hovering" && this.target !== target) {
-                this.target = target;
-            } else if (this.action === "hovering" && !target) {
-                this.clearState();
-            }
-        });
     }
 }

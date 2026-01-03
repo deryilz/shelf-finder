@@ -1,22 +1,64 @@
 import { ShelfMap } from "./base-map.js";
 import { round, rad, rotatePoint } from "../utils.js";
 
+import { MATCH_SCHEMA } from "../match.js";
+import { parseValue } from "../parse.js";
+
+const SHADE_COLOR = "rgba(0, 0, 0, 0.1)";
+const SELECTED_COLOR = "#ac4444";
+
 export class AdminShelfMap extends ShelfMap {
-    constructor(canvas) {
-        super(canvas);
+    constructor(canvas, shelves) {
+        super(canvas, shelves);
 
-        this.onChange = new Set();
+        this.onEdit = new Set();
+        this.onSelect = new Set();
+        this.onInvalid = new Set();
 
-        this.handlePlace();
         this.handleEdit();
+        this.handleHover();
+        this.handlePlace();
+        this.handleClick();
     }
 
-    // rare override: if placing, we don't want to interact with the shelves on the map
-    getTarget(mouse) {
-        if (this.action === "placing") {
-            return null;
+    select(target) {
+        if (this.hasError()) {
+            for (let listener of this.onInvalid) {
+                listener();
+            }
         } else {
-            return super.getTarget(mouse);
+            this.selected = target;
+            for (let listener of this.onSelect) {
+                listener(target);
+            }
+        }
+    }
+
+    canPan(mouse) {
+        return !this.getTarget(mouse);
+    }
+
+    // override: if placing, don't interact with shelves
+    getTarget(mouse) {
+        return this.placingShelf ? null : super.getTarget(mouse);
+    }
+
+    // override
+    draw() {
+        super.draw();
+
+        if (this.selected) {
+            this.drawShelf(this.selected.shelf, SELECTED_COLOR, null, this.selected.partId);
+        }
+
+        if (this.clicked) {
+            this.drawShelf(this.hovered.shelf, SHADE_COLOR, null, this.clicked.partId);
+        }
+
+        if (this.placingShelf) {
+            this.drawShelf(this.placingShelf, null, "black");
+        } else if (this.hovered) {
+            this.drawShelf(this.hovered.shelf, null, "black", this.hovered.partId);
         }
     }
 
@@ -36,65 +78,108 @@ export class AdminShelfMap extends ShelfMap {
     handleEdit() {
         let startMouse = null;
         let startShelf = null;
+        this.clicked = null;
 
         this.onMouseDown.add((mouse) => {
             let target = this.getTarget(mouse);
             if (!target) return;
 
-            this.action = "moving";
-            this.target = target;
-            this.shade = true;
-
             startMouse = mouse;
             startShelf = { x: target.shelf.x, y: target.shelf.y };
+            this.clicked = target;
         });
 
         this.onMouseMove.add((mouse) => {
-            if (!this.target) return;
-            if (this.action !== "moving") return;
+            if (!this.clicked) return;
 
-            this.target.shelf.x = mouse.x - startMouse.x + startShelf.x;
-            this.target.shelf.y = mouse.y - startMouse.y + startShelf.y;
-            this.roundShelf(this.target.shelf);
+            this.clicked.shelf.x = mouse.x - startMouse.x + startShelf.x;
+            this.clicked.shelf.y = mouse.y - startMouse.y + startShelf.y;
+            this.roundShelf(this.clicked.shelf);
 
-            for (let listener of this.onChange) {
+            for (let listener of this.onEdit) {
                 listener();
             }
         });
 
         this.onMouseUp.add(() => {
-            if (this.action !== "moving") return;
+            if (!this.clicked) return;
 
-            this.clearState();
             startMouse = null;
             startShelf = null;
+            this.clicked = null;
+        });
+    }
+
+    handleHover() {
+        this.hovered = null;
+
+        this.onMouseMove.add((mouse) => {
+            this.hovered = this.clicked ?? this.getTarget(mouse);
         });
     }
 
     handlePlace() {
-        this.onMouseMove.add((mouse) => {
-            if (this.action !== "placing") return;
+        this.placingShelf = null;
 
-            this.target.shelf.x = mouse.x;
-            this.target.shelf.y = mouse.y;
-            this.roundShelf(this.target.shelf);
+        this.onMouseMove.add((mouse) => {
+            if (!this.placingShelf) return;
+
+            this.placingShelf.x = mouse.x;
+            this.placingShelf.y = mouse.y;
+            this.roundShelf(this.placingShelf);
         });
 
-        this.onClick.add((mouse) => {
-            if (this.action !== "placing") return
+        this.onClick.add(() => {
+            if (!this.placingShelf) return;
 
-            this.shelves.push(this.target.shelf);
-            this.clearState();
+            this.shelves.push(this.placingShelf);
+            this.placingShelf = null;
+        });
 
-            for (let listener of this.onChange) {
-                listener();
+        window.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.placingShelf) {
+                this.placingShelf = null;
+                this.draw();
             }
         });
     }
 
     prepareToPlace(shelf) {
-        this.action = "placing";
-        this.target = { shelf, partId: null };
-        this.shade = false;
+        this.placingShelf = shelf;
+    }
+
+    handleClick() {
+        this.selected = null;
+
+        this.onClick.add((mouse) => {
+            let target = this.getTarget(mouse);
+            if (target && (
+                target.partId !== this.selected?.partId ||
+                target.shelf !== this.selected?.shelf
+            )) {
+                this.select(target);
+            }
+        });
+    }
+
+    // whether the selected shelf has an error
+    hasError() {
+        if (!this.selected) return false;
+
+        let shelf = this.selected.shelf;
+        if (!this.shelves.includes(shelf)) return false;
+
+        for (let match of shelf.matches.flat()) {
+            let schema = MATCH_SCHEMA.get(match.type);
+            for (let [name, ty, _] of schema.fields) {
+                try {
+                    parseValue(match[name], ty);
+                } catch {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
