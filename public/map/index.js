@@ -45,10 +45,12 @@ async function loadMap() {
     map.draw();
 
     if (map.matches.length === 0) {
+        let bookString = callNumber;
+        if (sublocation) bookString += " [" + sublocation + "]"
         showDialog(
             "Couldn't find any shelves",
             "No shelves were found containing the following book:",
-            JSON.stringify([callNumber, sublocation].filter(x => x), null, 1),
+            bookString,
             "But don't fret! It's probably just a bug with this map. Consider asking a librarian for help."
         );
     } else if (map.matches.length > 1) {
@@ -60,19 +62,11 @@ async function loadMap() {
     }
 }
 
-window.addEventListener("error", (event) => {
-    showDialog(
-        "Super unexpected error",
-        event.error.message,
-        "Please file a bug report!"
-    );
-}, true);
-
 let spinner = showSpinner();
 loadMap().catch((err) => {
     showDialog(
         "Couldn't load map",
         err.message,
-        "Your school might not be supported. Consider submitting a bug report!"
+        "Consider submitting a bug report!"
     );
 }).finally(() => spinner.remove());
