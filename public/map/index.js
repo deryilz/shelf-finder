@@ -1,10 +1,19 @@
 import { ShelfMap } from "/scripts/ui/base-map.js";
-import { showDialog } from "/scripts/ui/dialog.js";
+import { showDialog, showSpinner } from "/scripts/ui/dialog.js";
 
 import { parseBook } from "/scripts/parse.js";
 import { matches } from "/scripts/match.js";
 
 let canvas = document.getElementById("canvas");
+
+let spinner = showSpinner();
+loadMap().catch((err) => {
+    showDialog(
+        "Couldn't load map",
+        err.message,
+        "Your school might not be supported. Consider submitting a bug report!"
+    );
+}).finally(() => spinner.remove());
 
 async function loadMap() {
     let params = new URLSearchParams(location.search);
@@ -63,11 +72,3 @@ async function loadMap() {
         );
     }
 }
-
-loadMap().catch((err) => {
-    showDialog(
-        "Couldn't load map",
-        err.message,
-        "Your school might not be supported. Consider submitting a bug report!"
-    );
-});

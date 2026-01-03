@@ -1,8 +1,8 @@
 let styleText = `
 .shelf-finder {
-    z-index: 100 !important;
-    box-sizing: border-box !important;
-    font-family: monospace !important;
+    z-index: 100;
+    box-sizing: border-box;
+    font-family: monospace;
 }
 
 .shelf-finder.border {
@@ -62,7 +62,7 @@ let styleText = `
 .shelf-finder.x:hover {
     filter: brightness(0.9);
 }
-`;
+`.replace(/;/, " !important;");
 
 if (!window.shelfFinderYet) {
     window.shelfFinderYet = true;

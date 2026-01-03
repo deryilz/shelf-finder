@@ -1,5 +1,5 @@
 import { AdminShelfMap } from "/scripts/ui/admin-map.js";
-import { showDialog } from "/scripts/ui/dialog.js";
+import { showDialog, showSpinner } from "/scripts/ui/dialog.js";
 
 import { MATCH_SCHEMA, defaultMatch } from "/scripts/match.js";
 import { SHELF_SCHEMA, blankShelf } from "/scripts/shelf.js";
@@ -23,6 +23,7 @@ class AdminDashboard {
 
         this.map = new AdminShelfMap(canvas);
 
+        let spinner = showSpinner();
         this.getShelves().then((shelves) => {
             console.log("Got shelves", shelves);
             this.lastSave = JSON.stringify(shelves);
@@ -30,7 +31,7 @@ class AdminDashboard {
             this.makeListeners();
         }).catch((err) => {
             showDialog("Error in getting map", err.message);
-        });
+        }).finally(() => spinner.remove());
     }
 
     // TODO: update both functions of course
@@ -75,6 +76,7 @@ class AdminDashboard {
                 );
             }
 
+            let spinner = showSpinner();
             this.saveShelves().then(() => {
                 this.lastSave = JSON.stringify(this.map.shelves);
                 this.render(false);
@@ -82,7 +84,7 @@ class AdminDashboard {
                 showDialog("Saved!", "Your map has been saved.");
             }).catch((err) => {
                 showDialog("Failed!", "Failed to save map: " + err.message);
-            })
+            }).finally(() => spinner.remove());
         });
 
         window.addEventListener("beforeunload", (event) => {

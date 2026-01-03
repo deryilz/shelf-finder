@@ -1,10 +1,12 @@
-export function showDialog(titleText, ...texts) {
-    // shouldn't be able to add multiple dialogs at once
-    if (document.querySelector("div.dialog-backdrop")) return;
-
+function showBackdrop() {
     let backdrop = document.createElement("div");
     backdrop.classList.add("dialog-backdrop");
     document.body.appendChild(backdrop);
+    return backdrop;
+}
+
+export function showDialog(titleText, ...texts) {
+    let backdrop = showBackdrop();
 
     let element = document.createElement("div");
     element.classList.add("dialog");
@@ -31,4 +33,16 @@ export function showDialog(titleText, ...texts) {
             button.click();
         }
     });
+
+    return backdrop;
+}
+
+export function showSpinner() {
+    let backdrop = showBackdrop();
+
+    let spinner = document.createElement("div");
+    spinner.classList.add("spinner");
+    backdrop.appendChild(spinner);
+
+    return backdrop;
 }

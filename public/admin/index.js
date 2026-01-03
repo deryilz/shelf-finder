@@ -1,4 +1,4 @@
-import { showDialog } from "/scripts/ui/dialog.js";
+import { showDialog, showSpinner } from "/scripts/ui/dialog.js";
 
 let username = document.getElementById("username");
 let password = document.getElementById("password");
@@ -21,11 +21,14 @@ password.addEventListener("keydown", (event) => {
 });
 
 button.addEventListener("click", () => {
-    auth().catch((err) => showDialog("Unexpected error", err.message));
+    let spinner = showSpinner();
+    auth()
+        .catch((err) => showDialog("Unexpected error", err.message))
+        .finally(() => spinner.remove());
 });
 
 async function auth() {
-    let res = await fetch("/api/auth", {
+    let res = await fetch("/api/get-token", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
