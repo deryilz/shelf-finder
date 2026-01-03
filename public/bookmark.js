@@ -29,12 +29,15 @@ let styleText = `
     display: flex;
     flex-direction: column;
     gap: 20px;
+    color: black;
 }
 
 .shelf-finder.bar {
     display: flex;
     gap: 20px;
     flex: 0 0 auto;
+    color: black;
+    font-weight: normal;
 }
 
 .shelf-finder.frame {
