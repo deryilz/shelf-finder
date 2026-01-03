@@ -148,7 +148,10 @@ class AdminDashboard {
 
     trySelecting(selected) {
         if (this.hasError()) {
-            showDialog("Warning", "There are errors in your previously selected shelf that must be fixed.");
+            showDialog(
+                "Warning",
+                "There are errors in your currently selected shelf that must be fixed."
+            );
         } else {
             this.selected = selected;
             this.render();
