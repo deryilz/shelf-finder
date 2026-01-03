@@ -102,8 +102,11 @@ function startShelfFinder() {
     params.append("callNumber", info.callNumber);
     if (info.sublocation) params.append("sublocation", info.sublocation);
 
+    let message = "Your book's call number is " + info.callNumber;
+    if (info.sublocation) message += " [" + info.sublocation + "]";
+
     let url = import.meta.resolve("/map") + "?" + params.toString();
-    show("Your book's call number is " + info.callNumber, url);
+    show(message, url);
 }
 
 // easy element creation
