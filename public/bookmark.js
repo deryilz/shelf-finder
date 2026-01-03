@@ -5,6 +5,12 @@ let styleText = `
     font-family: monospace !important;
 }
 
+.shelf-finder.border {
+    border: 5px solid black;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
 .shelf-finder.backdrop {
     position: fixed;
     left: 0;
@@ -14,30 +20,33 @@ let styleText = `
     background-color: rgba(34, 34, 34, 0.4);
 }
 
-.shelf-finder.shadow {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-}
-
-.shelf-finder.bar {
+.shelf-finder.ui {
     position: fixed;
-    left: 50%;
+    left: 50px;
     top: 50px;
-    width: 90%;
-    transform: translateX(-50%);
+    right: 50px;
+    bottom: 50px;
     display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
-.shelf-finder.bar > * {
-    border: 5px solid black;
-    border-radius: 15px;
-    font-size: 25px;
+.shelf-finder.bar {
+    display: flex;
+    gap: 20px;
+    flex: 0 0 auto;
+}
+
+.shelf-finder.frame {
+    background-color: #f9e784;
+    flex: 1;
 }
 
 .shelf-finder.header {
     background-color: #f9e784;
     padding: 15px 20px;
     text-align: center;
+    font-size: 25px;
     flex: 1;
 }
 
@@ -46,6 +55,7 @@ let styleText = `
     font-weight: bold;
     padding: 15px 25px;
     cursor: pointer;
+    font-size: 25px;
     flex: 0 0 auto;
 }
 
@@ -89,7 +99,7 @@ function startShelfFinder() {
     params.append("callNumber", info.callNumber);
     if (info.sublocation) params.append("sublocation", info.sublocation);
 
-    let url = import.meta.resolve("./map") + "?" + params.toString();
+    let url = import.meta.resolve("/map") + "?" + params.toString();
     show("Your book's call number is " + info.callNumber, url);
 }
 
@@ -102,23 +112,23 @@ function make(type, classes, parent = document.body) {
 }
 
 function show(message, frameUrl = null) {
-    // TODO
-    console.log({ message, frameUrl });
-
     let backdrop = make("div", ["backdrop"]);
-    let bar = make("div", ["bar"], backdrop);
+    let ui = make("div", ["ui"], backdrop);
 
-    let header = make("div", ["header", "shadow"], bar);
+    let bar = make("div", ["bar"], ui);
+    if (frameUrl) {
+        let frame = make("iframe", ["frame", "border"], ui);
+        frame.src = frameUrl;
+    }
+
+    let header = make("div", ["header", "border"], bar);
     header.textContent = message;
 
-    let x = make("div", ["x", "shadow"], bar);
+    let x = make("div", ["x", "border"], bar);
     x.textContent = "x";
     x.onclick = () => {
         backdrop.remove();
         window.shelfFinder = false;
-
-        // TODO: remove
-        window.shelfFinderYet = false;
     };
 }
 
@@ -164,6 +174,6 @@ function getBookInfo() {
 
 // can be null, of course
 function getSchoolName() {
-    return document.getElementById("current-site-name")?.textContent.trim();
+    return document.getElementById("current-site-name")?.textContent?.trim();
 }
 
