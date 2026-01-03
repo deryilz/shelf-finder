@@ -65,7 +65,7 @@ let styleText = `
 .shelf-finder.x:hover {
     filter: brightness(0.9);
 }
-`.replace(/;/, " !important;");
+`.replace(/;/g, " !important;");
 
 if (!window.shelfFinderYet) {
     window.shelfFinderYet = true;
