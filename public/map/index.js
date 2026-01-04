@@ -5,6 +5,7 @@ import { parseBook } from "/scripts/parse.js";
 import { matches } from "/scripts/match.js";
 
 let canvas = document.getElementById("canvas");
+let tooltip = document.getElementById("tooltip");
 
 async function loadMap() {
     let params = new URLSearchParams(location.search);
@@ -30,14 +31,14 @@ async function loadMap() {
         return showDialog("Couldn't get map", json.message);
     }
 
-    let map = new UserShelfMap(canvas, json.map);
+    let map = new UserShelfMap(canvas, json.map, tooltip);
     window.map = map;
 
     for (let shelf of map.shelves) {
         for (let i = 0; i < shelf.matches.length; i++) {
             if (shelf.matches[i].some(m => matches(m, book))) {
-                console.log("Matched book!", shelf.matches[i]);
-                map.matches.push({ shelf, partId: i });
+                console.log("Found shelf!", shelf.matches[i]);
+                map.addMatch({ shelf, partId: i });
             }
         }
     }
