@@ -18,7 +18,7 @@ a.bookmark {
     color: white;
     cursor: pointer;
     border: none;
-    padding: 10px 15px;
+    padding: 5px 15px;
     border-radius: 5px;
     text-decoration: none;
     margin: 5px 0;
@@ -27,3 +27,18 @@ a.bookmark {
 a.bookmark:hover {
     filter: brightness(0.9);
 }
+
+@media (max-width: 1000px) {
+    body {
+        font-size: 20px;
+    }
+
+    div.title {
+        font-size: 50px;
+    }
+
+    div.header {
+        font-size: 35px;
+    }
+}
+
