@@ -310,6 +310,7 @@ class AdminDashboard {
 }
 
 window.addEventListener("error", (event) => {
+    console.warn(err);
     showDialog(
         "Super unexpected error",
         event.error.message,

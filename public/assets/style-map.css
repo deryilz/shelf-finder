@@ -10,10 +10,30 @@ div.tooltip {
     position: fixed;
     background-color: white; /* rgba(255, 255, 255, 0.8); */
     color: black;
-    padding: 10px 15px;
     border-radius: 5px;
-    font-size: 15px;
-    max-width: 400px;
+    max-width: 450px;
     word-break: break-word;
     pointer-events: none;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    font-size: 15px;
+}
+
+div.tooltip div.heading {
+    padding: 10px 15px;
+    background-color: #dddddd;
+}
+
+div.tooltip div.warning {
+    padding: 10px 15px;
+    background-color: #d05353;
+    color: white;
+    font-weight: 600;
+}
+
+div.tooltip div.rest {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }

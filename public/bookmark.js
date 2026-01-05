@@ -124,12 +124,10 @@ function show(message, frameUrl = null) {
 
     let bar = make("div", ["bar"], ui);
     if (frameUrl) {
-        let frame = make("iframe", ["frame", "border"], ui);
-        frame.src = frameUrl;
+        make("iframe", ["frame", "border"], ui).src = frameUrl;
     }
 
-    let header = make("div", ["header", "border"], bar);
-    header.textContent = message;
+    make("div", ["header", "border"], bar).textContent = message;
 
     let x = make("div", ["x", "border"], bar);
     x.textContent = "x";

@@ -1,14 +1,16 @@
 import { ShelfMap } from "./base-map.js";
 
+import { MATCH_SCHEMA } from "../match.js";
+
 const MATCH_COLOR = "#ac4444";
 const TOOLTIP_DISTANCE = 5;
 
 export class UserShelfMap extends ShelfMap {
-    constructor(canvas, shelves, tooltip) {
+    constructor(canvas, shelves, tooltip, highlights) {
         super(canvas, shelves);
 
         this.tooltip = tooltip;
-        this.matches = [];
+        this.highlights = highlights;
 
         this.handleHover();
         this.handleMouseMove();
@@ -18,8 +20,8 @@ export class UserShelfMap extends ShelfMap {
     draw() {
         super.draw();
 
-        for (let match of this.matches) {
-            this.drawShelf(match.shelf, MATCH_COLOR, null, match.partId);
+        for (let highlight of this.highlights) {
+            this.drawShelf(highlight.shelf, MATCH_COLOR, null, highlight.partId);
         }
 
         this.tooltip.classList.toggle("hidden", !this.hovered);
@@ -51,10 +53,6 @@ export class UserShelfMap extends ShelfMap {
         }
     }
 
-    addMatch(target) {
-        this.matches.push(target);
-    }
-
     handleHover() {
         this.hovered = null;
 
@@ -74,8 +72,47 @@ export class UserShelfMap extends ShelfMap {
     }
 
     updateTooltipText() {
-        // TODO: make this better
-        let matches = this.hovered.shelf.matches[this.hovered.partId];
-        this.tooltip.textContent = JSON.stringify(matches);
+        this.tooltip.textContent = "";
+
+        let { shelf, partId } = this.hovered;
+        let matches = shelf.matches[partId];
+
+        let lines = [];
+        let warning = false;
+
+        if (this.highlights.some(h => h.partId === partId && h.shelf === shelf)) {
+            lines.push("Your book is likely in this shelf!");
+            warning = true;
+        }
+
+        if (matches.length === 0) {
+            lines.push("No info for this shelf.");
+        } else {
+            lines.push("Shelf contains the following books:");
+
+            for (let match of matches) {
+                let schema = MATCH_SCHEMA.get(match.type);
+                let fields = schema.fields.map(([name]) => `${name}: "${match[name]}"`);
+                lines.push("{ " + fields.join(", ") + " }");
+            }
+        }
+
+        let heading = document.createElement("div");
+        heading.classList.add(warning ? "warning" : "heading");
+        heading.textContent = lines[0];
+        this.tooltip.appendChild(heading);
+
+        // continue only if there are more lines
+        if (lines.length < 2) return;
+
+        let rest = document.createElement("div");
+        rest.classList.add("rest");
+        this.tooltip.appendChild(rest);
+
+        for (let line of lines.slice(1)) {
+            let div = document.createElement("div");
+            div.textContent = line;
+            rest.appendChild(div);
+        }
     }
 }

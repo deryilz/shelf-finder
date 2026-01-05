@@ -31,21 +31,22 @@ async function loadMap() {
         return showDialog("Couldn't get map", json.message);
     }
 
-    let map = new UserShelfMap(canvas, json.map, tooltip);
-    window.map = map;
-
-    for (let shelf of map.shelves) {
+    let highlights = [];
+    for (let shelf of json.map) {
         for (let i = 0; i < shelf.matches.length; i++) {
             if (shelf.matches[i].some(m => matches(m, book))) {
-                console.log("Found shelf!", shelf.matches[i]);
-                map.addMatch({ shelf, partId: i });
+                highlights.push({ shelf, partId: i });
             }
         }
     }
+    console.log("Highlights: ", highlights);
 
+    let map = new UserShelfMap(canvas, json.map, tooltip, highlights);
     map.draw();
 
-    if (map.matches.length === 0) {
+    window.map = map;
+
+    if (highlights.length === 0) {
         let bookString = callNumber;
         if (sublocation) bookString += " [" + sublocation + "]"
         showDialog(
@@ -54,7 +55,7 @@ async function loadMap() {
             bookString,
             "But don't fret! It's probably just a bug with this map. Consider asking a librarian for help."
         );
-    } else if (map.matches.length > 1) {
+    } else if (highlights.length > 1) {
         showDialog(
             "Multiple shelves were found",
             "More than one shelf was found that might contain the book you're looking for.",
@@ -65,6 +66,7 @@ async function loadMap() {
 
 let spinner = showSpinner();
 loadMap().catch((err) => {
+    console.warn(err);
     showDialog(
         "Couldn't load map",
         err.message,
