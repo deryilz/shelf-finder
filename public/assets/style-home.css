@@ -21,6 +21,7 @@ a.bookmark {
     padding: 5px 15px;
     border-radius: 5px;
     text-decoration: none;
+    white-space: nowrap;
     margin: 5px 0;
 }
 
@@ -30,6 +31,7 @@ a.bookmark:hover {
 
 @media (max-width: 1000px) {
     body {
+        padding: 30px;
         font-size: 20px;
     }
 
