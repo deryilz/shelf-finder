@@ -146,16 +146,14 @@ function show(message, frameUrl = null) {
 // can be null
 // returns { callNumber, sublocation, available }
 function getBookInfo() {
-    let doc = (
-        document.getElementById("Library Manager")?.contentDocument ??
-        document.getElementById("Destiny Discover")?.contentDocument ??
-        document
-    );
+    let manager = document.getElementById("Library Manager");
+    if (manager && !manager.hidden) {
+        let doc = manager.contentDocument;
 
-    // for the old ui
-    let id = doc.getElementById("callNumber");
-    if (id) {
-        let summary = document.getElementById("copiesSummary");
+        let id = doc.getElementById("callNumber");
+        if (!id) return null;
+
+        let summary = doc.getElementById("copiesSummary");
         let match = summary?.innerText.match(/([0-9]+) of [0-9]+/);
 
         return {
@@ -164,6 +162,10 @@ function getBookInfo() {
             available: !match || Number(match[1]) > 0
         };
     }
+
+    // otherwise, we're on the new ui
+    let discover = document.getElementById("Destiny Discover");
+    let doc = discover && !discover.hidden ? discover.contentDocument : document;
 
     let main = doc.querySelector(".cr-channel-main") ?? doc.querySelector(".product-title-details");
     if (!main) return null;
