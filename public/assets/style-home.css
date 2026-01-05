@@ -31,12 +31,17 @@ a.bookmark:hover {
 
 @media (max-width: 1000px) {
     body {
-        padding: 30px;
-        font-size: 20px;
+        padding: 30px 15px;
+        font-size: 18px;
+    }
+
+    div.section {
+        gap: 15px;
     }
 
     div.title {
-        font-size: 50px;
+        font-size: 40px;
+        margin-bottom: 15px;
     }
 
     div.header {
