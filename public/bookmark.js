@@ -1,6 +1,6 @@
 let styleText = `
 .shelf-finder {
-    z-index: 100;
+    z-index: 1000000;
     box-sizing: border-box;
     font-family: monospace;
 }
