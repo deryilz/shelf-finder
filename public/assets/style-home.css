@@ -12,3 +12,18 @@ div.header {
 li {
     margin: 5px 0;
 }
+
+a.bookmark {
+    background-color: #e58f65;
+    color: white;
+    cursor: pointer;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin: 5px 0;
+}
+
+a.bookmark:hover {
+    filter: brightness(0.9);
+}
