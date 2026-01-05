@@ -53,7 +53,7 @@ export const MATCH_SCHEMA = new Map([
             );
         },
         info() {
-            let str = `Books starting with "${this.prefix}"`;
+            let str = `Books in the "${this.prefix}" category`;
             if (!isBlank(this.authorRange)) str += ` in the range "${this.authorRange}"`;
             return str;
         }
