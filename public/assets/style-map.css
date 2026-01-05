@@ -35,5 +35,24 @@ div.tooltip div.rest {
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 15px;
+}
+
+a.about-tool {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    font-size: 20px;
+    color: black;
+    animation: slide 3s ease-out;
+}
+
+a.about-tool:hover {
+    text-decoration: none;
+}
+
+@keyframes slide {
+    0% {
+        right: -400px;
+    }
 }

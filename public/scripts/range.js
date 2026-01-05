@@ -1,5 +1,9 @@
 import { parseRange, parseValue } from "./parse.js";
 
+export function isBlank(raw) {
+    return /(\s)*-(\s)*/.test(raw);
+}
+
 export function contains(raw, x, subType = "str") {
     // expected not to throw
     let range = parseRange(raw, subType);

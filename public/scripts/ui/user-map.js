@@ -1,6 +1,5 @@
 import { ShelfMap } from "./base-map.js";
-
-import { MATCH_SCHEMA } from "../match.js";
+import { info } from "../match.js";
 
 const MATCH_COLOR = "#ac4444";
 const TOOLTIP_DISTANCE = 5;
@@ -91,9 +90,7 @@ export class UserShelfMap extends ShelfMap {
             lines.push("Shelf contains the following books:");
 
             for (let match of matches) {
-                let schema = MATCH_SCHEMA.get(match.type);
-                let fields = schema.fields.map(([name]) => `${name}: "${match[name]}"`);
-                lines.push("{ " + fields.join(", ") + " }");
+                lines.push("- " + info(match));
             }
         }
 
