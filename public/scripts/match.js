@@ -34,7 +34,7 @@ export const MATCH_SCHEMA = new Map([
         },
         info() {
             let str = `Fiction books`;
-            if (!isBlank(this.authorRange)) str += `in the range (${this.authorRange})`;
+            if (!isBlank(this.authorRange)) str += ` in the range (${this.authorRange})`;
             if (this.sublocation) str += ` in the category "${this.sublocation}"`;
             return str;
         }
@@ -54,7 +54,7 @@ export const MATCH_SCHEMA = new Map([
         },
         info() {
             let str = `Books starting with "${this.prefix}"`;
-            if (!isBlank(this.authorRange)) str += `in the range (${this.authorRange})`;
+            if (!isBlank(this.authorRange)) str += ` in the range (${this.authorRange})`;
             return str;
         }
     }],
