@@ -87,11 +87,11 @@ export class UserShelfMap extends ShelfMap {
         if (matches.length === 0) {
             lines.push("No info for this shelf.");
         } else {
-            lines.push("Shelf contains the following books:");
+            lines.push("This shelf contains the following:");
+        }
 
-            for (let match of matches) {
-                lines.push("- " + info(match));
-            }
+        for (let match of matches) {
+            lines.push("- " + info(match));
         }
 
         let heading = document.createElement("div");
