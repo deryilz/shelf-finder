@@ -3,6 +3,10 @@
 // TODO: add "word"?
 
 export function parseValue(x, type) {
+    if (x.length > 100) {
+        throw new Error("Input too long!");
+    }
+
     if (type === "any") {
         return x;
     }
