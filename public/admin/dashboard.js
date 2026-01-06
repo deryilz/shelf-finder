@@ -143,8 +143,6 @@ class AdminDashboard {
         for (let i = 0; i < containers.length; i++) {
             containers[i].classList.toggle("active", i === selected.partId);
         }
-
-        this.map.draw();
     }
 
     renderSidebar(shelf) {
