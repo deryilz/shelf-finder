@@ -91,7 +91,9 @@ function startShelfFinder() {
     }
 
     let schoolName = getSchoolName();
-    if (!schoolName) return show("Couldn't find school name on page.");
+    if (!schoolName) {
+        return show("Couldn't find school name on page.");
+    }
 
     if (!info.available) {
         return show("No copies of this book are currently available.");
