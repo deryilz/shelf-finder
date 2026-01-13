@@ -59,6 +59,7 @@ let styleText = `
     padding: 15px 25px;
     cursor: pointer;
     font-size: 25px;
+    vertical-align: middle;
     flex: 0 0 auto;
 }
 
@@ -96,16 +97,21 @@ function startShelfFinder() {
     }
 
     if (!info.available) {
-        return show("No copies of this book are currently available.");
+        let lowercaseName = cleanName(info.name);
+        return show(`No copies of ${lowercaseName} are currently available.`);
     }
 
     let params = new URLSearchParams();
     params.append("schoolName", schoolName);
     params.append("callNumber", info.callNumber);
-    if (info.sublocation) params.append("sublocation", info.sublocation);
 
-    let message = "Your book's call number is " + info.callNumber;
-    if (info.sublocation) message += " [" + info.sublocation + "]";
+    let capitalizedName = cleanName(info.name, true);
+    let message = `${capitalizedName} is labeled ${info.callNumber}`;
+
+    if (info.sublocation) {
+        params.append("sublocation", info.sublocation);
+        message += " [" + info.sublocation + "]";
+    }
 
     let url = import.meta.resolve("/map") + "?" + params.toString();
     console.log("Framing Shelf Finder URL:", url);
@@ -146,7 +152,7 @@ function show(message, frameUrl = null) {
 }
 
 // can be null
-// returns { callNumber, sublocation, available }
+// returns { callNumber, sublocation, name, available }
 function getBookInfo() {
     let manager = document.getElementById("Library Manager");
     if (manager && !manager.hidden) {
@@ -155,12 +161,15 @@ function getBookInfo() {
         let id = doc.getElementById("callNumber");
         if (!id) return null;
 
+        let rawName = doc.querySelector("#titleDetail .TableHeading")?.innerText;
+
         let summary = doc.getElementById("copiesSummary");
         let match = summary?.innerText.match(/([0-9]+) of [0-9]+/);
 
         return {
             callNumber: id.innerText,
             sublocation: doc.getElementById("subLocation")?.innerText,
+            name: rawName?.replace(/[\t\n]/g, ""),
             available: !match || Number(match[1]) > 0
         };
     }
@@ -174,21 +183,34 @@ function getBookInfo() {
 
     let divs = Array.from(main.querySelectorAll("div"));
     let lines = divs.flatMap(e => e.innerText.split("\n"));
-    let find = (prefix) => {
-        let full = prefix + ": ";
-        return lines.find(l => l.startsWith(full))?.substring(full.length);
-    };
+
+    let find = (prefix) => lines
+        .find(l => l.startsWith(prefix + ": "))
+        ?.substring(prefix.length + 2);
 
     let callNumber = find("Call Number");
     if (!callNumber) return null;
 
     let sublocation = find("Sublocation");
+    let name = main.querySelector(".clickable-book-name, .title-clamp")?.innerText;
     let available = !main.querySelector(".out");
-    return { callNumber, sublocation, available };
+    return { callNumber, sublocation, name, available };
 }
 
 // can be null, of course
 function getSchoolName() {
     return document.getElementById("current-site-name")?.textContent?.trim();
+}
+
+function cleanName(name, capitalize = false, maxSize = 22) {
+    if (name) {
+        return name.length > maxSize
+            ? `"${name.substring(0, maxSize - 3).trim()}..."`
+            : `"${name}"`;
+    } else if (capitalize) {
+        return "This book";
+    } else {
+        return "this book";
+    }
 }
 
