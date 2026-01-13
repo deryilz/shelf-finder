@@ -59,7 +59,6 @@ let styleText = `
     padding: 15px 25px;
     cursor: pointer;
     font-size: 25px;
-    vertical-align: middle;
     flex: 0 0 auto;
 }
 
@@ -208,9 +207,9 @@ function cleanName(name, capitalize = false, maxSize = 22) {
             ? `"${name.substring(0, maxSize - 3).trim()}..."`
             : `"${name}"`;
     } else if (capitalize) {
-        return "This book";
+        return "Your book";
     } else {
-        return "this book";
+        return "your book";
     }
 }
 
