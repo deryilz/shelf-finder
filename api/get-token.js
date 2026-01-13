@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
     let { school, pass } = req.body;
     let token = authLibrarian(school, pass);
-    if (!token) res.json({ success: false });
+    if (!token) return res.json({ success: false });
 
     res.json({ success: true, school, token });
 }
