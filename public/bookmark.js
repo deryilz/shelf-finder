@@ -96,25 +96,37 @@ function startShelfFinder() {
     }
 
     if (!info.available) {
-        let lowercaseName = cleanName(info.name);
-        return show(`No copies of ${lowercaseName} are currently available.`);
+        let message = format("No copies of {} are currently available.", info.name);
+        return show(message);
     }
 
     let params = new URLSearchParams();
     params.append("schoolName", schoolName);
     params.append("callNumber", info.callNumber);
+    if (info.sublocation) params.append("sublocation", info.sublocation);
 
-    let capitalizedName = cleanName(info.name, true);
-    let message = `${capitalizedName} is labeled ${info.callNumber}`;
-
-    if (info.sublocation) {
-        params.append("sublocation", info.sublocation);
-        message += " [" + info.sublocation + "]";
-    }
+    let rawMessage = "{} is labeled " + info.callNumber;
+    if (info.sublocation) rawMessage += " [" + info.sublocation + "]";
+    let message = format(rawMessage, info.name);
 
     let url = import.meta.resolve("/map") + "?" + params.toString();
     console.log("Framing Shelf Finder URL:", url);
     show(message, url);
+}
+
+// expects str to have a single {} within it
+function format(str, name) {
+    if (name) {
+        let nameSize = 70 - str.length; // max size 70
+        let shortName = name.length > nameSize
+            ? `"${name.substring(0, nameSize - 3).trim()}..."`
+            : `"${name}"`;
+        return str.replace("{}", shortName);
+    } else if (str.indexOf("{}") === 0) {
+        return str.replace("{}", "Your book");
+    } else {
+        return str.replace("{}", "your book");
+    }
 }
 
 // easy element creation
@@ -200,16 +212,3 @@ function getBookInfo() {
 function getSchoolName() {
     return document.getElementById("current-site-name")?.textContent?.trim();
 }
-
-function cleanName(name, capitalize = false, maxSize = 22) {
-    if (name) {
-        return name.length > maxSize
-            ? `"${name.substring(0, maxSize - 3).trim()}..."`
-            : `"${name}"`;
-    } else if (capitalize) {
-        return "Your book";
-    } else {
-        return "your book";
-    }
-}
-
