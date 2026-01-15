@@ -116,16 +116,19 @@ function startShelfFinder() {
 
 // expects str to have a single {} within it
 function format(str, name) {
-    if (name) {
-        let nameSize = 70 - str.length; // max size 70
-        let shortName = name.length > nameSize
-            ? `"${name.substring(0, nameSize - 3).trim()}..."`
-            : `"${name}"`;
-        return str.replace("{}", shortName);
-    } else if (str.indexOf("{}") === 0) {
-        return str.replace("{}", "Your book");
+    if (!name) {
+        let uppercase = str.startsWith("{}");
+        return str.replace("{}", uppercase ? "Your book" : "your book");
+    }
+
+    let nameSize = 70 - str.length; // max size 70
+    if (name.length > nameSize) {
+        let shortName = name
+            .substring(0, nameSize - 3)
+            .replace(/[^A-Za-z0-9]+$/, "");
+        return str.replace("{}", `"${shortName}..."`);
     } else {
-        return str.replace("{}", "your book");
+        return str.replace("{}", `"${name}"`);
     }
 }
 
