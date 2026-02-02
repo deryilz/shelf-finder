@@ -88,6 +88,13 @@ function parseCallNumber(callNumber) {
         };
     }
 
+    if (parts[0] === "EB") {
+        return {
+            type: "ebook",
+            author: parts[2]
+        };
+    }
+
     // TODO: is this detailed enough?
     if (parts.length === 3) {
         return {
