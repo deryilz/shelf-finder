@@ -86,6 +86,6 @@ window.addEventListener("keydown", event => {
     if (event.key === "Escape") {
         window.top.postMessage({
             fn: "hide"
-        });
+        }, "*");
     }
 });
