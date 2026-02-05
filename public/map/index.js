@@ -80,3 +80,12 @@ loadMap().catch((err) => {
         "Consider submitting a bug report!"
     );
 }).finally(() => spinner.remove());
+
+// send escape keypresses to extension, so the map can be closed
+window.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        window.top.postMessage({
+            fn: "hide"
+        });
+    }
+});
