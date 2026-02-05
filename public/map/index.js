@@ -21,13 +21,6 @@ async function loadMap() {
     let book = parseBook(callNumber, sublocation);
     console.log("Book:", book);
 
-    if (book.type === "ebook") {
-        return showDialog(
-            "This title is an eBook.",
-            "eBooks are not available on the shelves. Click into the book's information on Destiny and click Open, then click Read to browse the book or Check Out to continue reading the full book."
-        );
-    }
-
     let res = await fetch("/api/get-map", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -51,19 +44,26 @@ async function loadMap() {
     let map = new UserShelfMap(canvas, json.map, tooltip, highlights);
     map.draw();
 
-    window.map = map;
+    if (book.type === "ebook") {
+        return showDialog(
+            "This title is an eBook",
+            "eBooks are not available on the shelves. Click into the book's information on Destiny and click Open, then click Read to browse the book or Check Out to continue reading the full book."
+        );
+    }
 
     if (highlights.length === 0) {
         let bookString = callNumber;
         if (sublocation) bookString += " [" + sublocation + "]"
-        showDialog(
+        return showDialog(
             "Couldn't find any shelves",
             "No shelves were found containing the following book:",
             bookString,
             "But don't fret! It's probably just a bug with this map. Consider asking a librarian for help."
         );
-    } else if (highlights.length > 1) {
-        showDialog(
+    }
+
+    if (highlights.length > 1) {
+        return showDialog(
             "Multiple shelves were found",
             "More than one shelf was found that might contain the book you're looking for.",
             "It's probably in one of those shelves. Remember, you can always ask a librarian if you need help!"
