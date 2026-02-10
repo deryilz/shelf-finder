@@ -5,7 +5,7 @@ import { MATCH_SCHEMA } from "../match.js";
 import { parseValue } from "../parse.js";
 
 const SHADE_COLOR = "rgba(0, 0, 0, 0.1)";
-const SELECTED_COLOR = "#ac4444";
+const SELECTED_COLOR = "#7a2634";
 
 export class AdminShelfMap extends ShelfMap {
     constructor(canvas, shelves) {

@@ -1,7 +1,7 @@
 import { ShelfMap } from "./base-map.js";
 import { info } from "../match.js";
 
-const MATCH_COLOR = "#ac4444";
+const HIGHLIGHT_COLOR = "#7a2634";
 const TOOLTIP_DISTANCE = 5;
 
 export class UserShelfMap extends ShelfMap {
@@ -20,7 +20,7 @@ export class UserShelfMap extends ShelfMap {
         super.draw();
 
         for (let highlight of this.highlights) {
-            this.drawShelf(highlight.shelf, MATCH_COLOR, null, highlight.partId);
+            this.drawShelf(highlight.shelf, HIGHLIGHT_COLOR, null, highlight.partId);
         }
 
         this.tooltip.classList.toggle("hidden", !this.hovered);
