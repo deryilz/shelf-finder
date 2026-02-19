@@ -42,13 +42,8 @@ async function loadMap() {
         }
     }
 
-    let highlights = allHighlights.reduce((acc, highlight) => {
-        let increase = acc[0] ? highlight.priority - acc[0].priority : 1;
-
-        if (increase == 0) return acc.concat(highlight);
-        if (increase < 0) return acc;
-        if (increase > 0) return [highlight];
-    }, []);
+    let highestPriority = Math.max(...allHighlights.map(h => h.priority));
+    let highlights = allHighlights.filter(h => h.priority === highestPriority);
 
     console.log({ allHighlights, highlights });
 
