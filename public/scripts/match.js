@@ -1,12 +1,14 @@
 import { contains, isBlank } from "./range.js";
 import { closeEquals } from "./utils.js";
 
+// TODO: make them instances of classes
 export const MATCH_SCHEMA = new Map([
     ["nonfictionMatch", {
         name: "Nonfiction match",
         fields: [
             ["deweyRange", "numRange", "Dewey decimal range"]
         ],
+        priority: 1,
         matches(book) {
             return (
                 book.type === "nonfiction" &&
@@ -25,6 +27,7 @@ export const MATCH_SCHEMA = new Map([
             ["authorRange", "strRange", "Author range"],
             ["sublocation", "any", "Fiction sublocation (optional)"]
         ],
+        priority: 1,
         matches(book) {
             return (
                 book.type === "fiction" &&
@@ -45,6 +48,7 @@ export const MATCH_SCHEMA = new Map([
             ["prefix", "str", "Prefix (like B)"],
             ["authorRange", "strRange", "Author range"]
         ],
+        priority: 1,
         matches(book) {
             return (
                 book.type === "other" &&
@@ -60,6 +64,7 @@ export const MATCH_SCHEMA = new Map([
     }],
     ["exactMatch", {
         name: "Exact match",
+        priority: 2,
         fields: [
             ["callNumber", "any", "The book's call number"]
         ],
@@ -90,4 +95,8 @@ export function matches(match, book) {
 
 export function info(match, book) {
     return MATCH_SCHEMA.get(match.type).info.call(match, book);
+}
+
+export function priority(match) {
+    return MATCH_SCHEMA.get(match.type).priority;
 }

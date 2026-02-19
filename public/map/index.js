@@ -2,7 +2,7 @@ import { UserShelfMap } from "/scripts/ui/user-map.js";
 import { showDialog, showSpinner } from "/scripts/ui/dialog.js";
 
 import { parseBook } from "/scripts/parse.js";
-import { matches } from "/scripts/match.js";
+import { matches, priority } from "/scripts/match.js";
 
 let canvas = document.getElementById("canvas");
 let tooltip = document.getElementById("tooltip");
@@ -31,15 +31,26 @@ async function loadMap() {
         return showDialog("Couldn't get map", json.message);
     }
 
-    let highlights = [];
+    let allHighlights = [];
     for (let shelf of json.map) {
         for (let i = 0; i < shelf.matches.length; i++) {
-            if (shelf.matches[i].some(m => matches(m, book))) {
-                highlights.push({ shelf, partId: i });
+            for (let match of shelf.matches[i]) {
+                if (matches(match, book)) {
+                    allHighlights.push({ shelf, priority: priority(match), partId: i });
+                }
             }
         }
     }
-    console.log("Highlights: ", highlights);
+
+    let highlights = allHighlights.reduce((acc, highlight) => {
+        let increase = acc[0] ? highlight.priority - acc[0].priority : 1;
+
+        if (increase == 0) return acc.concat(highlight);
+        if (increase < 0) return acc;
+        if (increase > 0) return [highlight];
+    }, []);
+
+    console.log({ allHighlights, highlights });
 
     let map = new UserShelfMap(canvas, json.map, tooltip, highlights);
     map.draw();
