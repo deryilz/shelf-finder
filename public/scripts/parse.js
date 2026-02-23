@@ -11,6 +11,14 @@ export function parseValue(x, type) {
         return x;
     }
 
+    if (type === "notNull") {
+        if (!x) {
+            throw new Error("Input can't be blank.");
+        }
+
+        return x;
+    }
+
     if (type === "str") {
         if (typeof x === "string" && /^[A-Za-z ]+$/.test(x)) {
             return x.toUpperCase();
@@ -74,9 +82,10 @@ export function parseRange(raw, subType = "str") {
     return range;
 }
 
-export function parseBook(callNumber, sublocation = null) {
-    let props = parseCallNumber(callNumber.toUpperCase());
-    return { callNumber, sublocation, ...props };
+// uses same bookInfo format as the extension
+export function parseBook(info) {
+    let props = parseCallNumber(info.callNumber.toUpperCase());
+    return { ...info, ...props };
 }
 
 function parseCallNumber(callNumber) {

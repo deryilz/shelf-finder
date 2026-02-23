@@ -75,6 +75,27 @@ export const MATCH_SCHEMA = new Map([
             return `Books with the call number "${this.callNumber}"`;
         }
     }],
+    ["authorMatch", {
+        name: "Author match",
+        priority: 3,
+        fields: [
+            ["firstName", "any", "Author's first name (optional)"],
+            ["lastName", "notNull", "Author's last name"]
+        ],
+        matches(book) {
+            let rawName = book.authorFull;
+            if (!rawName) return false;
+
+            let [last, first] = rawName.split(/[^a-zA-Z]+/);
+            if (this.firstName && !closeEquals(this.firstName, first)) return false;
+
+            return closeEquals(this.lastName, last);
+        },
+        info() {
+            let name = [this.firstName, this.lastName].filter(x => x).join(" ");
+            return `Books by the author ${name}`;
+        }
+    }],
 ]);
 
 // returns the default match for a certain variant type

@@ -13,12 +13,13 @@ async function loadMap() {
     let schoolName = params.get("schoolName");
     let callNumber = params.get("callNumber");
     let sublocation = params.get("sublocation");
+    let authorFull = params.get("authorFull");
 
     if (!schoolName || !callNumber) {
         return showDialog("Invalid query parameters");
     }
 
-    let book = parseBook(callNumber, sublocation);
+    let book = parseBook({ callNumber, sublocation, authorFull });
     console.log("Book:", book);
 
     let res = await fetch("/api/get-map", {
