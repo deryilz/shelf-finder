@@ -10,7 +10,7 @@
     "dev": "vercel dev"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.89.0",
+    "@neondatabase/serverless": "^1.1.0",
     "jsonwebtoken": "^9.0.2"
   }
 }
