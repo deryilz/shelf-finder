@@ -76,38 +76,46 @@ export class UserShelfMap extends ShelfMap {
         let { shelf, partId } = this.hovered;
         let matches = shelf.matches[partId];
 
-        let lines = [];
-        let warning = false;
+        let red = false;
+        let headers = [];
 
         if (this.highlights.some(h => h.partId === partId && h.shelf === shelf)) {
-            lines.push("Your book is likely in this shelf!");
-            warning = true;
+            headers.push("Your book is likely in this shelf!");
+            red = true;
         }
 
         if (matches.length === 0) {
-            lines.push("No info for this shelf.");
+            headers.push("No info for this shelf.");
         } else {
-            lines.push("This shelf contains the following:");
+            headers.push("This shelf contains the following:");
         }
 
+        let lines = [];
         for (let match of matches) {
             lines.push("- " + info(match));
         }
 
         let heading = document.createElement("div");
-        heading.classList.add(warning ? "warning" : "heading");
-        heading.textContent = lines[0];
+        heading.classList.add(red ? "red-heading" : "heading");
+        heading.textContent = headers[0];
         this.tooltip.appendChild(heading);
 
         // continue only if there are more lines
-        if (lines.length < 2) return;
+        if (lines.length === 0 && headers.length === 1) return;
 
         let rest = document.createElement("div");
         rest.classList.add("rest");
         this.tooltip.appendChild(rest);
 
-        for (let line of lines.slice(1)) {
+        for (let extraHeader of headers.slice(1)) {
             let div = document.createElement("div");
+            div.textContent = extraHeader;
+            rest.appendChild(div);
+        }
+
+        for (let line of lines) {
+            let div = document.createElement("div");
+            div.classList.add("small");
             div.textContent = line;
             rest.appendChild(div);
         }

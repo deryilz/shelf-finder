@@ -24,7 +24,7 @@ div.tooltip div.heading {
     background-color: #dddddd;
 }
 
-div.tooltip div.warning {
+div.tooltip div.red-heading {
     padding: 10px 15px;
     background-color: #d05353;
     color: white;
@@ -35,7 +35,11 @@ div.tooltip div.rest {
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
+}
+
+div.tooltip div.small {
+    font-size: 13px;
 }
 
 a.about-tool {
